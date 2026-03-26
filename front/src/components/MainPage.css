@@ -1,0 +1,81 @@
+.main-container {
+    font-family: Arial, sans-serif;
+}
+
+/* Navbar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    background: black;
+    color: white;
+}
+
+.menu span {
+    margin-left: 20px;
+    cursor: pointer;
+}
+
+/* Banner */
+.banner {
+    text-align: center;
+    padding: 80px 20px;
+    background: #f5f5f5;
+}
+
+.fit-btn {
+    padding: 12px 20px;
+    background: black;
+    color: white;
+    border: none;
+    margin-top: 20px;
+    cursor: pointer;
+}
+
+/* Category */
+.category {
+    padding: 40px;
+    text-align: center;
+}
+
+.category-list {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.category-item {
+    padding: 20px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+}
+
+/* Products */
+.products {
+    padding: 40px;
+    text-align: center;
+}
+
+.product-list {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.product-card {
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+
+.product-card img {
+    width: 150px;
+    height: 150px;
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    padding: 20px;
+    background: #222;
+    color: white;
+}
