@@ -1,0 +1,123 @@
+.cart-container {
+    min-height: 100vh;
+    background-color: #f5f5f5;
+    font-family: Arial, sans-serif;
+}
+
+.cart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 28px 50px;
+    background-color: #f5e9dd;
+}
+
+.logo-link {
+    text-decoration: none;
+    color: #5a3e2b;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.back-link {
+    text-decoration: none;
+    color: #5a3e2b;
+    font-size: 16px;
+}
+
+.cart-section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 50px 30px 80px;
+}
+
+.cart-section h1 {
+    color: #5a3e2b;
+    margin-bottom: 30px;
+}
+
+.empty-cart {
+    background-color: white;
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.shop-link {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 20px;
+    border-radius: 10px;
+    background-color: #d89c7c;
+    color: white;
+    text-decoration: none;
+}
+
+.cart-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.cart-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    background-color: white;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.cart-image {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 14px;
+    background-color: #eee;
+}
+
+.cart-info {
+    flex: 1;
+}
+
+.cart-info h3 {
+    margin: 0 0 10px;
+    color: #5a3e2b;
+}
+
+.cart-info p {
+    margin: 0;
+    color: #666;
+}
+
+.remove-btn {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 10px;
+    background-color: #d89c7c;
+    color: white;
+    cursor: pointer;
+}
+
+.cart-summary {
+    margin-top: 30px;
+    background-color: white;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.cart-summary h3 {
+    margin: 0 0 12px;
+    color: #5a3e2b;
+}
+
+.cart-summary p {
+    margin: 0;
+    font-size: 22px;
+    font-weight: bold;
+    color: #333;
+}

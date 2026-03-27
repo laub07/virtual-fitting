@@ -41,6 +41,7 @@ function MyPage() {
                     <Link to="/category">카테고리</Link>
                     <span>추천</span>
                     <Link to="/wishlist">찜</Link>
+                    <Link to="/cart">장바구니</Link>
                     <Link to="/mypage">마이페이지</Link>
                 </div>
             </header>
@@ -91,6 +92,12 @@ function MyPage() {
                         <h3>최근 본 상품</h3>
                         <p>최근에 둘러본 상품 내역을 볼 수 있어요.</p>
                         <button className="card-btn">확인하기</button>
+                    </div>
+
+                    <div className="info-card">
+                        <h3>장바구니</h3>
+                        <p>담아둔 상품을 확인할 수 있어요.</p>
+                        <Link to="/cart" className="card-link">보러가기</Link>
                     </div>
 
                     <div className="info-card">

@@ -1,0 +1,141 @@
+.category-list-container {
+    min-height: 100vh;
+    background-color: #f5f5f5;
+    font-family: Arial, sans-serif;
+    width: 100%;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 28px 50px;
+    background-color: #f5e9dd;
+}
+
+.logo {
+    font-size: 28px;
+    font-weight: bold;
+    color: #5a3e2b;
+}
+
+.logo-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.menu {
+    display: flex;
+    gap: 35px;
+}
+
+.menu a {
+    text-decoration: none;
+    color: #5a3e2b;
+    font-size: 16px;
+}
+
+.menu a:visited {
+    color: #5a3e2b;
+}
+
+.menu a:hover {
+    color: #5a3e2b;
+}
+
+.category-list-header {
+    padding: 50px;
+    background-color: #ececec;
+}
+
+.category-list-header h1 {
+    font-size: 32px;
+    color: #5a3e2b;
+    margin-bottom: 10px;
+}
+
+.category-list-header p {
+    font-size: 18px;
+    color: #666;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    padding: 40px 50px 80px;
+}
+
+.product-card {
+    background-color: white;
+    border-radius: 20px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.product-image {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+    border-radius: 16px;
+    background-color: #eee;
+    margin-bottom: 16px;
+}
+
+.product-card h3 {
+    margin-bottom: 10px;
+    color: #5a3e2b;
+}
+
+.product-card p {
+    color: #666;
+    margin-bottom: 16px;
+}
+
+.cart-btn {
+    display: inline-block;
+    padding: 10px 18px;
+    border-radius: 10px;
+    background-color: #d89c7c;
+    color: white;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.footer {
+    text-align: center;
+    padding: 20px;
+    background-color: #f5e9dd;
+    color: #5a3e2b;
+}
+
+@media (max-width: 1100px) {
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 700px) {
+    .navbar {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .menu {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .product-grid {
+        grid-template-columns: 1fr;
+        padding: 30px 20px 60px;
+    }
+
+    .category-list-header {
+        padding: 30px 20px;
+    }
+}

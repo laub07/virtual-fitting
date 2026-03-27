@@ -6,18 +6,21 @@ const categories = [
     {
         id: 1,
         name: "상의",
+        path: "top",
         image: "shirt.jpeg",
         items: ["티셔츠", "셔츠", "맨투맨", "후드티"]
     },
     {
         id: 2,
         name: "하의",
+        path: "bottom",
         image: "pants.jpeg",
         items: ["청바지", "슬랙스", "반바지", "스커트"]
     },
     {
         id: 3,
         name: "아우터",
+        path: "outer",
         image: "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcQtnjvaBpTNnHPUxOVDdVgIsoTOCt09Twp81dj5pk5c1whJ_CMzgjA4JaCtzGkiyTqtNA1sQGQqMLGJnDA56AzPj7C9AoR3G_Lbvw_TbBVCvS2h4b5EXI57koeQEKdfWU8ShPPO9w&usqp=CAc",
         items: ["자켓", "코트", "가디건", "패딩"]
     }
@@ -35,6 +38,7 @@ const CategoryPage = () => {
                     <Link to="/category">카테고리</Link>
                     <span>추천</span>
                     <Link to="/wishlist">찜</Link>
+                    <Link to="/cart">장바구니</Link>
                     <Link to="/mypage">마이페이지</Link>
                 </div>
             </header>
@@ -56,7 +60,10 @@ const CategoryPage = () => {
                                 <span key={index} className="sub-item">{item}</span>
                             ))}
                         </div>
-                        <button className="view-btn">보러가기</button>
+
+                        <Link to={`/category/list/${category.path}`} className="view-btn">
+                            보러가기
+                        </Link>
                     </div>
                 ))}
             </section>
