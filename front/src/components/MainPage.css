@@ -16,6 +16,19 @@
     cursor: pointer;
 }
 
+.menu a {
+    color: #5a3e2b;      /* 원하는 색으로 고정 */
+    text-decoration: none; /* 밑줄 제거 */
+}
+
+.menu a:visited {
+    color: #5a3e2b;      /* 클릭 후에도 색 안 바뀌게 */
+}
+
+.menu a:hover {
+    color: #5a3e2b;      /* 마우스 올려도 색 유지 */
+}
+
 /* Banner */
 .banner {
     text-align: center;
@@ -25,7 +38,7 @@
 
 .fit-btn {
     padding: 12px 20px;
-    background: black;
+    background: #5a3e2b;
     color: white;
     border: none;
     margin-top: 20px;
@@ -78,4 +91,37 @@
     padding: 20px;
     background: #222;
     color: white;
+}
+
+.menu a {
+    color: #5a3e2b;
+    text-decoration: none;
+}
+
+.menu a:visited {
+    color: #5a3e2b;
+}
+
+.menu a:hover {
+    color: #5a3e2b;
+}
+
+.product-card {
+    position: relative;
+    width: 220px;
+    background-color: white;
+    border-radius: 16px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.wishlist-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border: none;
+    background: transparent;
+    font-size: 24px;
+    cursor: pointer;
 }

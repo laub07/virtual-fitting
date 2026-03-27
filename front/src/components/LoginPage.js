@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { loginUser } from '../api/user/UserLogin';
 import './LoginPage.css';
 
-function LoginPage() {
+function LoginPage({ setToken }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
@@ -13,13 +13,21 @@ function LoginPage() {
         e.preventDefault();
 
         const response = await loginUser(username, password);
-        console.log("🔑 login response:", response);
+        console.log("🔑 login response:", response); // 여기가 중요
 
-        if (response.message === "로그인 성공") {
-            setError(null);
+
+
+        if (response.success) {
+            sessionStorage.setItem('Authorization', response.token);
             sessionStorage.setItem('Role', response.role);
-            sessionStorage.setItem('Username', response.username);
-            navigate("/");
+            setToken(response.token); // ✅ App.jsx와 연결된 token 상태 갱신
+
+            if (response.role === 'ADMIN') {
+                // ✅ 일단 navigate로 전환해서 콘솔 유지해보기
+                navigate('/admin');
+            } else {
+                navigate('/');
+            }
         } else {
             setError(response.message || '로그인 실패');
         }
@@ -30,7 +38,6 @@ function LoginPage() {
             <div className="logo">
                 <img src="/images/로고.png" alt="로고" title="로고" />
             </div>
-
             <div className="login-container">
                 <form onSubmit={handleLogin}>
                     <div className="form-group">
@@ -43,7 +50,6 @@ function LoginPage() {
                             required
                         />
                     </div>
-
                     <div className="form-group">
                         <label htmlFor="password">비밀번호</label>
                         <input
