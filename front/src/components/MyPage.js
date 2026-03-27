@@ -39,7 +39,7 @@ function MyPage() {
                 </h2>
                 <div className="menu">
                     <Link to="/category">카테고리</Link>
-                    <span>추천</span>
+                    <Link to="/recommend">추천</Link>
                     <Link to="/wishlist">찜</Link>
                     <Link to="/cart">장바구니</Link>
                     <Link to="/mypage">마이페이지</Link>

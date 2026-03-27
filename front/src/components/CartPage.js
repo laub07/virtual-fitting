@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "./CartPage.css";
 
+
 function CartPage() {
     const [cartItems, setCartItems] = useState([]);
 
@@ -26,7 +27,7 @@ function CartPage() {
                 <h2 className="logo">Fit on X</h2>
                 <div className="menu">
                     <Link to="/category">카테고리</Link>
-                    <span>추천</span>
+                    <Link to="/recommend">추천</Link>
                     <Link to="/wishlist">찜</Link>
                     <Link to="/cart">장바구니</Link>
                     <Link to="/mypage">마이페이지</Link>
@@ -71,6 +72,10 @@ function CartPage() {
                     </>
                 )}
             </section>
+            {/* Footer */}
+            <footer className="footer">
+                <p>© 2026 Virtual Fit Project</p>
+            </footer>
         </div>
     );
 }

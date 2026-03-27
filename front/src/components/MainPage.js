@@ -2,30 +2,57 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "./MainPage.css";
 
+
 const productData = [
     {
         id: 1,
         name: "기본 티셔츠",
-        image: "shirt.jpeg",
+        image: "/top/short-tshirt/shirt.jpeg",
+        category: "top",
     },
     {
         id: 2,
         name: "청바지",
-        image: "pants.jpeg",
+        image: "/bottom/longpant/pants.jpeg",
+        category: "bottom",
     },
     {
         id: 3,
         name: "후드티",
-        image: "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcQtnjvaBpTNnHPUxOVDdVgIsoTOCt09Twp81dj5pk5c1whJ_CMzgjA4JaCtzGkiyTqtNA1sQGQqMLGJnDA56AzPj7C9AoR3G_Lbvw_TbBVCvS2h4b5EXI57koeQEKdfWU8ShPPO9w&usqp=CAc",
+        image: "/top/hoodie/hoodie1.jpeg",
+        category: "top",
+    },
+    {
+        id: 4,
+        name: "슬랙스",
+        image: "/bottom/slacks/slacks1.jpeg",
+        category: "bottom",
+    },
+    {
+        id: 5,
+        name: "자켓",
+        image: "/outer/jacket/jacket1.jpeg",
+        category: "outer",
     },
 ];
 
 const MainPage = () => {
     const [wishlist, setWishlist] = useState([]);
+    const [displayProducts, setDisplayProducts] = useState([]);
 
     useEffect(() => {
         const savedWishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
         setWishlist(savedWishlist);
+
+        const clickedProducts =
+            JSON.parse(localStorage.getItem("clickedProducts")) || [];
+
+        if (clickedProducts.length > 0) {
+            setDisplayProducts(clickedProducts.slice(0, 3));
+        } else {
+            const shuffled = [...productData].sort(() => 0.5 - Math.random());
+            setDisplayProducts(shuffled.slice(0, 3));
+        }
     }, []);
 
     const toggleWishlist = (product) => {
@@ -44,15 +71,31 @@ const MainPage = () => {
 
     const isWished = (id) => wishlist.some((item) => item.id === id);
 
+    const handleProductClick = (product) => {
+        const clickedProducts =
+            JSON.parse(localStorage.getItem("clickedProducts")) || [];
+
+        const updatedClickedProducts = [
+            product,
+            ...clickedProducts.filter((item) => item.id !== product.id),
+        ];
+
+        localStorage.setItem(
+            "clickedProducts",
+            JSON.stringify(updatedClickedProducts)
+        );
+
+        setDisplayProducts(updatedClickedProducts.slice(0, 3));
+    };
+
     return (
         <div className="main-container">
-
             {/* Navbar */}
             <header className="navbar">
                 <h2 className="logo">Fit on X</h2>
                 <div className="menu">
                     <Link to="/category">카테고리</Link>
-                    <span>추천</span>
+                    <Link to="/recommend">추천</Link>
                     <Link to="/wishlist">찜</Link>
                     <Link to="/cart">장바구니</Link>
                     <Link to="/mypage">마이페이지</Link>
@@ -70,9 +113,15 @@ const MainPage = () => {
             <section className="category">
                 <h2>카테고리</h2>
                 <div className="category-list">
-                    <div className="category-item">상의</div>
-                    <div className="category-item">하의</div>
-                    <div className="category-item">아우터</div>
+                    <Link to="/category/list/top" className="category-item">
+                        상의
+                    </Link>
+                    <Link to="/category/list/bottom" className="category-item">
+                        하의
+                    </Link>
+                    <Link to="/category/list/outer" className="category-item">
+                        아우터
+                    </Link>
                 </div>
             </section>
 
@@ -80,11 +129,18 @@ const MainPage = () => {
             <section className="products">
                 <h2>인기 상품</h2>
                 <div className="product-list">
-                    {productData.map((product) => (
-                        <div className="product-card" key={product.id}>
+                    {displayProducts.map((product) => (
+                        <div
+                            className="product-card"
+                            key={product.id}
+                            onClick={() => handleProductClick(product)}
+                        >
                             <button
                                 className="wishlist-btn"
-                                onClick={() => toggleWishlist(product)}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleWishlist(product);
+                                }}
                             >
                                 {isWished(product.id) ? "❤️" : "🤍"}
                             </button>

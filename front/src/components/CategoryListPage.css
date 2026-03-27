@@ -1,57 +1,56 @@
 .category-list-container {
     min-height: 100vh;
-    background-color: #f5f5f5;
-    font-family: Arial, sans-serif;
-    width: 100%;
+    background-color: #fffaf5;
+    color: #5a3e2b;
 }
 
+/* Navbar */
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 28px 50px;
-    background-color: #f5e9dd;
+    padding: 20px 40px;
+    border-bottom: 1px solid #e5e5e5;
+    background-color: white;
 }
 
 .logo {
     font-size: 28px;
     font-weight: bold;
-    color: #5a3e2b;
+    margin: 0;
 }
 
 .logo-link {
     text-decoration: none;
-    color: inherit;
+    color: #5a3e2b;
 }
 
 .menu {
     display: flex;
-    gap: 35px;
+    gap: 24px;
+    align-items: center;
 }
 
 .menu a {
     text-decoration: none;
-    color: #5a3e2b;
+    color: black;
     font-size: 16px;
 }
 
-.menu a:visited {
-    color: #5a3e2b;
-}
-
 .menu a:hover {
-    color: #5a3e2b;
+    color: #666;
 }
 
+/* Header */
 .category-list-header {
-    padding: 50px;
-    background-color: #ececec;
+    text-align: center;
+    padding: 60px 20px 40px;
+    background-color: #f8f8f8;
 }
 
 .category-list-header h1 {
-    font-size: 32px;
-    color: #5a3e2b;
-    margin-bottom: 10px;
+    font-size: 40px;
+    margin-bottom: 12px;
 }
 
 .category-list-header p {
@@ -59,83 +58,120 @@
     color: #666;
 }
 
+/* Sub category */
+.sub-category-section {
+    padding: 50px 40px 10px;
+}
+
+.sub-category-section h2 {
+    font-size: 28px;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+/* Product grid */
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(220px, 220px));
     gap: 24px;
-    padding: 40px 50px 80px;
+    justify-content: center;
 }
 
 .product-card {
+    width: 220px;
+    border: 1px solid #e5e5e5;
+    border-radius: 14px;
+    overflow: hidden;
     background-color: white;
-    border-radius: 20px;
-    padding: 20px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
     text-align: center;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    padding: 20px 0;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
 }
 
 .product-image {
-    width: 100%;
-    height: 240px;
+    width: 180px;
+    height: 220px;
     object-fit: cover;
-    border-radius: 16px;
-    background-color: #eee;
-    margin-bottom: 16px;
+    display: block;
 }
 
-.product-card h3 {
-    margin-bottom: 10px;
-    color: #5a3e2b;
+.product-name {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 14px 0 16px;
 }
 
-.product-card p {
-    color: #666;
-    margin-bottom: 16px;
+/* Back button */
+.back-area {
+    text-align: center;
+    margin: 40px 0;
 }
 
-.cart-btn {
+.back-btn {
     display: inline-block;
-    padding: 10px 18px;
-    border-radius: 10px;
-    background-color: #d89c7c;
-    color: white;
     text-decoration: none;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
+    color: white;
+    background-color: #5a3e2b;
+    padding: 12px 24px;
+    border-radius: 8px;
 }
 
+.back-btn:hover {
+    background-color: #333;
+}
+
+/* Footer */
 .footer {
     text-align: center;
     padding: 20px;
-    background-color: #f5e9dd;
+    border-top: 1px solid #e5e5e5;
+    margin-top: 40px;
+    color: #666;
+    font-size: 14px;
+}
+.product-card {
+    position: relative;
+}
+
+/* ❤️ 찜 */
+.wishlist-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border: none;
+    background: white;
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* 🛒 장바구니 */
+.cart-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    border: none;
+    background: white;
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    cursor: pointer;
+    font-size: 16px;
+}
+.product-price {
+    font-size: 15px;
+    font-weight: 700;
     color: #5a3e2b;
-}
-
-@media (max-width: 1100px) {
-    .product-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 700px) {
-    .navbar {
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .menu {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 20px;
-    }
-
-    .product-grid {
-        grid-template-columns: 1fr;
-        padding: 30px 20px 60px;
-    }
-
-    .category-list-header {
-        padding: 30px 20px;
-    }
+    margin-bottom: 16px;
 }

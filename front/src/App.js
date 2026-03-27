@@ -8,6 +8,7 @@ import WishList from './components/WishList';
 import MyPage from './components/MyPage';
 import CartPage from "./components/CartPage";
 import CategoryListPage from "./components/CategoryListPage";
+import RecommendPage from "./components/RecommendPage";
 
 function App() {
     const [token, setToken] = useState(sessionStorage.getItem("Authorization"));
@@ -22,6 +23,7 @@ function App() {
                 <Route path="/mypage" element={<MyPage />} />
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/category/list/:type" element={<CategoryListPage />} />
+                <Route path="/recommend" element={<RecommendPage />} />
             </Routes>
         </BrowserRouter>
     );

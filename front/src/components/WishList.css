@@ -1,22 +1,23 @@
+/* 전체 컨테이너 */
 .wishlist-container {
-    min-height: 100vh;
-    background-color: #fffaf5;
     font-family: Arial, sans-serif;
+    background-color: #fffaf5;
+    min-height: 100vh;
 }
 
+/* Navbar */
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 20px 40px;
-    background-color: #fdf1e7;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #e5e5e5;
+    background-color: white;
 }
 
 .logo {
     font-size: 28px;
     font-weight: bold;
-    color: #5a3e2b;
 }
 
 .logo-link {
@@ -27,87 +28,127 @@
 .menu {
     display: flex;
     gap: 25px;
-}
-
-.menu a {
-    text-decoration: none;
+    font-size: 16px;
     color: #5a3e2b;
 }
 
-.menu a:visited {
-    color: #5a3e2b;
-}
-
-.menu a:hover {
-    color: #5a3e2b;
-}
-
+/* 헤더 */
 .wishlist-section {
-    padding: 50px 40px;
     text-align: center;
+    padding: 50px 20px 30px;
 }
 
 .wishlist-section h1 {
-    margin-bottom: 30px;
+    font-size: 36px;
+    margin-bottom: 10px;
     color: #5a3e2b;
 }
 
-.empty-text {
-    font-size: 18px;
-    color: #8a6d5a;
-}
-
+/* 리스트 (그리드) */
 .wishlist-list {
     display: flex;
     justify-content: center;
-    gap: 25px;
+    gap: 30px;
     flex-wrap: wrap;
+    padding: 20px 40px 60px;
 }
 
+/* 카드 */
 .wishlist-card {
-    width: 220px;
+    width: 280px;
     background-color: white;
-    border-radius: 16px;
-    padding: 15px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    border-radius: 20px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
-.wishlist-card img {
+/* 카드 hover */
+.wishlist-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* 이미지 */
+.wishlist-image {
     width: 100%;
     height: 250px;
     object-fit: cover;
-    border-radius: 12px;
+    border-radius: 16px;
+    margin-bottom: 15px;
+    transition: transform 0.3s ease;
+    background-color: #f3f3f3;
 }
 
-.wishlist-card {
-    position: relative;
-    width: 220px;
-    background-color: white;
-    border-radius: 16px;
-    padding: 15px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+/* 이미지 hover 확대 */
+.wishlist-card:hover .wishlist-image {
+    transform: scale(1.05);
+}
+
+/* 상품명 */
+.wishlist-card h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: #5a3e2b;
+}
+
+/* 가격 */
+.wishlist-price {
+    font-size: 16px;
+    color: #8a6d5a;
+    margin-bottom: 12px;
 }
 
 /* 하트 버튼 */
-.wishlist-btn {
+.heart-btn {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 15px;
+    right: 15px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
     border: none;
-    background: transparent;
-    font-size: 26px;
+    background-color: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     cursor: pointer;
+    font-size: 18px;
+    color: red;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
 }
 
-/* hover 효과 */
-.wishlist-btn:hover {
-    transform: scale(1.2);
+.heart-btn:hover {
+    transform: scale(1.15);
 }
 
+/* 삭제 버튼 (선택사항) */
+.remove-btn {
+    padding: 8px 14px;
+    border-radius: 10px;
+    background-color: #d89c7c;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: auto;
+}
+
+.remove-btn:hover {
+    background-color: #c98766;
+}
+
+/* Footer */
 .footer {
     text-align: center;
     padding: 20px;
     background-color: #fdf1e7;
     color: #7a5c49;
-    margin-top: 40px;
+    margin-top: 20px;
 }
