@@ -3,8 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { loginUser } from '../api/user/UserLogin';
 import './LoginPage.css';
 
-
-function LoginPage({ setToken }) {
+function LoginPage() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
@@ -14,17 +13,14 @@ function LoginPage({ setToken }) {
         e.preventDefault();
 
         const response = await loginUser(username, password);
-        console.log("🔑 login response:", response); // 여기가 중요
+        console.log("🔑 login response:", response);
 
-
-
-        if (response.success) {
-            sessionStorage.setItem('Authorization', response.token);
+        if (response.message === '로그인 성공') {
+            setError(null);
             sessionStorage.setItem('Role', response.role);
-            setToken(response.token); // ✅ App.jsx와 연결된 token 상태 갱신
+            sessionStorage.setItem('Username', response.username);
 
             if (response.role === 'ADMIN') {
-                // ✅ 일단 navigate로 전환해서 콘솔 유지해보기
                 navigate('/admin');
             } else {
                 navigate('/');
