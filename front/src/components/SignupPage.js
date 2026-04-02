@@ -1,37 +1,72 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import "./SignupPage.css";
 
 function SignUp() {
     const [form, setForm] = useState({
         id: "",
         password: "",
+        passwordConfirm: "",
         name: "",
         phone: ""
     });
 
-    // 입력값 변경
+    const [message, setMessage] = useState("");
+    const [isMatch, setIsMatch] = useState(null);
+
     const handleChange = (e) => {
-        const {name, value} = e.target;
-        setForm({
+        const { name, value } = e.target;
+
+        const updatedForm = {
             ...form,
             [name]: value
-        });
+        };
+
+        setForm(updatedForm);
+
+        if (updatedForm.password && updatedForm.passwordConfirm) {
+            if (updatedForm.password === updatedForm.passwordConfirm) {
+                setMessage("비밀번호가 일치합니다");
+                setIsMatch(true);
+            } else {
+                setMessage("비밀번호가 일치하지 않습니다");
+                setIsMatch(false);
+            }
+        } else {
+            setMessage("");
+            setIsMatch(null);
+        }
     };
 
-    // 회원가입 버튼 클릭
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        if (!form.name || !form.phone || !form.id || !form.password) {
+        if (
+            !form.name ||
+            !form.phone ||
+            !form.id ||
+            !form.password ||
+            !form.passwordConfirm
+        ) {
             alert("모든 정보를 입력해주세요!");
             return;
         }
 
-        // localStorage 저장
-        localStorage.setItem("user", JSON.stringify(form));
+        if (form.password !== form.passwordConfirm) {
+            alert("비밀번호가 일치하지 않습니다!");
+            return;
+        }
+
+        const userData = {
+            id: form.id,
+            password: form.password,
+            name: form.name,
+            phone: form.phone
+        };
+
+        localStorage.setItem("user", JSON.stringify(userData));
 
         alert("회원가입 완료!");
-        window.location.href = "/login"; // 로그인 페이지로 이동
+        window.location.href = "/login";
     };
 
     return (
@@ -39,7 +74,6 @@ function SignUp() {
             <h2>회원가입</h2>
 
             <form onSubmit={handleSubmit}>
-
                 <input
                     type="text"
                     name="id"
@@ -58,11 +92,17 @@ function SignUp() {
 
                 <input
                     type="password"
-                    name="password"
+                    name="passwordConfirm"
                     placeholder="비밀번호 확인"
-                    value={form.password}
+                    value={form.passwordConfirm}
                     onChange={handleChange}
                 />
+
+                {message && (
+                    <p className={`password-message ${isMatch ? "success" : "error"}`}>
+                        {message}
+                    </p>
+                )}
 
                 <input
                     type="text"

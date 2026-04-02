@@ -48,10 +48,18 @@
     background-color: #5e3f2f;
 }
 
-/* 반응형 (모바일) */
-@media (max-width: 480px) {
-    .signup-container {
-        width: 90%;
-        padding: 20px;
-    }
+.password-message {
+    margin-top: 0px;
+    margin-bottom: 30px;
+    font-size: 12px;
+}
+
+/* 일치할 때 */
+.password-message.success {
+    color: green;
+}
+
+/* 불일치할 때 */
+.password-message.error {
+    color: red;
 }
