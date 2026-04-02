@@ -20,7 +20,9 @@ const WishList = () => {
         <div className="wishlist-container">
             <header className="navbar">
                 <h2 className="logo">
-                    <Link to="/" className="logo-link">Fit on X</Link>
+                    <Link to="/" className="logo-link">
+                        <img src="/로고1.png" alt="Fit on X 로고" className="logo-img" />
+                    </Link>
                 </h2>
                 <div className="menu">
                     <Link to="/category">카테고리</Link>

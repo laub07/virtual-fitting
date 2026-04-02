@@ -9,6 +9,7 @@ import MyPage from './components/MyPage';
 import CartPage from "./components/CartPage";
 import CategoryListPage from "./components/CategoryListPage";
 import RecommendPage from "./components/RecommendPage";
+import SignupPage from "./components/SignupPage";
 
 function App() {
     const [token, setToken] = useState(sessionStorage.getItem("Authorization"));
@@ -24,6 +25,7 @@ function App() {
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/category/list/:type" element={<CategoryListPage />} />
                 <Route path="/recommend" element={<RecommendPage />} />
+                <Route path="/register" element={<SignupPage />} />
             </Routes>
         </BrowserRouter>
     );

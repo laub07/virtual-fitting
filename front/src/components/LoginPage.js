@@ -37,7 +37,7 @@ function LoginPage({ setToken }) {
     return (
         <div className="LoginPage">
             <div className="logo">
-                <img src="/images/로고.png" alt="로고" title="로고" />
+                <img src="/로고1.png" alt="로고" title="로고" />
             </div>
             <div className="login-container">
                 <form onSubmit={handleLogin}>

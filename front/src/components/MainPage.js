@@ -92,7 +92,7 @@ const MainPage = () => {
         <div className="main-container">
             {/* Navbar */}
             <header className="navbar">
-                <h2 className="logo">Fit on X</h2>
+                <img src="/로고1.png" alt="로고1" />
                 <div className="menu">
                     <Link to="/category">카테고리</Link>
                     <Link to="/recommend">추천</Link>

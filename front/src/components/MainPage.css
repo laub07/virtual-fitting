@@ -163,3 +163,7 @@
     font-size: 14px;
     color: #666;
 }
+.navbar img {
+    width: 120px;   /* 원하는 크기로 조절 */
+    height: auto;   /* 비율 유지 */
+}

@@ -24,7 +24,11 @@ function CartPage() {
     return (
         <div className="cart-container">
             <header className="cart-header">
-                <h2 className="logo">Fit on X</h2>
+                <h2 className="logo">
+                    <Link to="/" className="logo-link">
+                        <img src="/로고1.png" alt="Fit on X 로고" className="logo-img" />
+                    </Link>
+                </h2>
                 <div className="menu">
                     <Link to="/category">카테고리</Link>
                     <Link to="/recommend">추천</Link>

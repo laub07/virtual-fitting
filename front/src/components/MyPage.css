@@ -119,6 +119,10 @@
     border: none;
 }
 
+.login-btn-link:hover {
+    background-color: #5a3e2b;
+}
+
 .logout-btn {
     background-color: #d89c7c;
     color: white;

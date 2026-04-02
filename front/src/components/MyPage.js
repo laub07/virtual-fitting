@@ -35,7 +35,9 @@ function MyPage() {
         <div className="mypage-container">
             <header className="navbar">
                 <h2 className="logo">
-                    <Link to="/" className="logo-link">Fit on X</Link>
+                    <Link to="/" className="logo-link">
+                        <img src="/로고1.png" alt="Fit on X 로고" className="logo-img" />
+                    </Link>
                 </h2>
                 <div className="menu">
                     <Link to="/category">카테고리</Link>
@@ -66,12 +68,6 @@ function MyPage() {
                         </>
                     ) : (
                         <>
-                            <h2>회원 정보</h2>
-                            <p><strong>이름</strong> 홍길동</p>
-                            <p><strong>이메일</strong> example@fitonx.com</p>
-                            <p><strong>키</strong> ?cm</p>
-                            <p><strong>몸무게</strong> ?kg</p>
-
                             <div className="profile-buttons">
                                 <button className="logout-btn" onClick={handleLogout}>
                                     로그아웃
