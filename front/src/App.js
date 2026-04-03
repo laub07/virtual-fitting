@@ -25,7 +25,7 @@ function App() {
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/category/list/:type" element={<CategoryListPage />} />
                 <Route path="/recommend" element={<RecommendPage />} />
-                <Route path="/register" element={<SignupPage />} />
+                <Route path="/signup" element={<SignupPage />} />
             </Routes>
         </BrowserRouter>
     );

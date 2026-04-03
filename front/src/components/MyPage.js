@@ -62,7 +62,7 @@ function MyPage() {
                             </p>
 
                             <div className="profile-buttons">
-                                <Link to="/register" className="signup-btn-link">회원가입</Link>
+                                <Link to="/signup" className="signup-btn-link">회원가입</Link>
                                 <Link to="/login" className="login-btn-link">로그인</Link>
                             </div>
                         </>

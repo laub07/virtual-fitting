@@ -54,12 +54,10 @@
     font-size: 12px;
 }
 
-/* 일치할 때 */
 .password-message.success {
     color: green;
 }
 
-/* 불일치할 때 */
 .password-message.error {
     color: red;
 }
