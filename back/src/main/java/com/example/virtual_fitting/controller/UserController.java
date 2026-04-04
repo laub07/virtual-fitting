@@ -27,6 +27,12 @@ public class UserController {
         return ResponseEntity.ok("회원가입 성공");
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
+
+
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody UserLoginRequest request) {
         return ResponseEntity.ok(userService.login(request));

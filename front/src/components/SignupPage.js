@@ -1,13 +1,18 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { signupUser } from "../api/user/UserSignup";
 import "./SignupPage.css";
 
 function SignUp() {
+    const navigate = useNavigate();
+
     const [form, setForm] = useState({
-        id: "",
+        username: "",
         password: "",
         passwordConfirm: "",
         name: "",
-        phone: ""
+        phone: "",
+        role: "USER"
     });
 
     const [message, setMessage] = useState("");
@@ -37,13 +42,13 @@ function SignUp() {
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (
             !form.name ||
             !form.phone ||
-            !form.id ||
+            !form.username ||
             !form.password ||
             !form.passwordConfirm
         ) {
@@ -57,16 +62,25 @@ function SignUp() {
         }
 
         const userData = {
-            id: form.id,
+            username: form.username,
             password: form.password,
             name: form.name,
-            phone: form.phone
+            phone: form.phone,
+            role: form.role
         };
 
-        localStorage.setItem("user", JSON.stringify(userData));
+        try {
+            await signupUser(userData);
+            alert("회원가입 완료!");
+            navigate("/login");
+        } catch (error) {
+            console.error("회원가입 실패:", error);
 
-        alert("회원가입 완료!");
-        window.location.href = "/login";
+            const errorMessage =
+                error.response?.data || "회원가입에 실패했습니다. 다시 시도해주세요.";
+
+            alert(errorMessage);
+        }
     };
 
     return (
@@ -76,9 +90,9 @@ function SignUp() {
             <form onSubmit={handleSubmit}>
                 <input
                     type="text"
-                    name="id"
+                    name="username"
                     placeholder="아이디"
-                    value={form.id}
+                    value={form.username}
                     onChange={handleChange}
                 />
 
