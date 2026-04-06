@@ -1,6 +1,6 @@
 .recommend-container {
     min-height: 100vh;
-    background-color: #fff;
+    background-color: #fffaf5;
     color: #222;
 }
 
@@ -10,7 +10,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 20px 40px;
-    border-bottom: 1px solid #e5e5e5;
+    border-bottom: 1px solid #f5e9dd;
     background-color: white;
 }
 
@@ -38,14 +38,14 @@
 }
 
 .menu a:hover {
-    color: #666;
+    color: #f5e9dd;
 }
 
 /* Banner */
 .recommend-banner {
     text-align: center;
     padding: 80px 20px 60px;
-    background-color: #f8f8f8;
+    background-color: #fdf1e7;
     margin-bottom: 10px;
 }
 
