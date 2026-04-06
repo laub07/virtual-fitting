@@ -121,3 +121,30 @@
     font-weight: bold;
     color: #333;
 }
+
+.item-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.quantity-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.quantity-box button {
+    width: 25px;
+    height: 25px;
+    border: none;
+    background-color: #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.quantity-box span {
+    width: 20px;
+    text-align: center;
+}

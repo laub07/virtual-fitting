@@ -17,8 +17,25 @@ function CartPage() {
         localStorage.setItem("cart", JSON.stringify(updatedCart));
     };
 
+    const increaseQty = (index) => {
+        const updated = [...cartItems];
+        updated[index].quantity = (updated[index].quantity || 1) + 1;
+        setCartItems(updated);
+        localStorage.setItem("cart", JSON.stringify(updated));
+    };
+
+    const decreaseQty = (index) => {
+        const updated = [...cartItems];
+
+        if ((updated[index].quantity || 1) > 1) {
+            updated[index].quantity -= 1;
+            setCartItems(updated);
+            localStorage.setItem("cart", JSON.stringify(updated));
+        }
+    };
+
     const totalPrice = cartItems.reduce((sum, item) => {
-        return sum + Number(item.price || 0);
+        return sum + (item.price * (item.quantity || 1));
     }, 0);
 
     return (
@@ -52,19 +69,31 @@ function CartPage() {
                         <div className="cart-list">
                             {cartItems.map((item, index) => (
                                 <div className="cart-card" key={index}>
-                                    {item.image && (
-                                        <img src={item.image} alt={item.name} className="cart-image" />
-                                    )}
+
+                                    <img src={item.image} alt={item.name} className="cart-image" />
+
                                     <div className="cart-info">
                                         <h3>{item.name}</h3>
-                                        <p>{item.price}원</p>
+                                        <p>{item.price.toLocaleString()}원</p>
                                     </div>
-                                    <button
-                                        className="remove-btn"
-                                        onClick={() => handleRemoveItem(index)}
-                                    >
-                                        삭제
-                                    </button>
+
+                                    <div className="item-actions">
+                                        {/* 🔹 수량 버튼 */}
+                                        <div className="quantity-box">
+                                            <button onClick={() => decreaseQty(index)}>-</button>
+                                            <span>{item.quantity || 1}</span>
+                                            <button onClick={() => increaseQty(index)}>+</button>
+                                        </div>
+
+                                        {/* 🔹 삭제 버튼 */}
+                                        <button
+                                            className="remove-btn"
+                                            onClick={() => handleRemoveItem(index)}
+                                        >
+                                            삭제
+                                        </button>
+                                    </div>
+
                                 </div>
                             ))}
                         </div>
