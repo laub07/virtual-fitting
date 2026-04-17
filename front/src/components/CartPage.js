@@ -2,13 +2,18 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "./CartPage.css";
 
-
 function CartPage() {
     const [cartItems, setCartItems] = useState([]);
 
     useEffect(() => {
-        const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
-        setCartItems(savedCart);
+        const token = sessionStorage.getItem("Authorization");
+
+        if (token) {
+            const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
+            setCartItems(savedCart);
+        } else {
+            setCartItems([]);
+        }
     }, []);
 
     const handleRemoveItem = (indexToRemove) => {
@@ -53,7 +58,6 @@ function CartPage() {
                     <Link to="/cart">장바구니</Link>
                     <Link to="/mypage">마이페이지</Link>
                 </div>
-
             </header>
 
             <section className="cart-section">
@@ -69,7 +73,6 @@ function CartPage() {
                         <div className="cart-list">
                             {cartItems.map((item, index) => (
                                 <div className="cart-card" key={index}>
-
                                     <img src={item.image} alt={item.name} className="cart-image" />
 
                                     <div className="cart-info">
@@ -78,14 +81,12 @@ function CartPage() {
                                     </div>
 
                                     <div className="item-actions">
-                                        {/* 🔹 수량 버튼 */}
                                         <div className="quantity-box">
                                             <button onClick={() => decreaseQty(index)}>-</button>
                                             <span>{item.quantity || 1}</span>
                                             <button onClick={() => increaseQty(index)}>+</button>
                                         </div>
 
-                                        {/* 🔹 삭제 버튼 */}
                                         <button
                                             className="remove-btn"
                                             onClick={() => handleRemoveItem(index)}
@@ -93,7 +94,6 @@ function CartPage() {
                                             삭제
                                         </button>
                                     </div>
-
                                 </div>
                             ))}
                         </div>
@@ -105,7 +105,7 @@ function CartPage() {
                     </>
                 )}
             </section>
-            {/* Footer */}
+
             <footer className="footer">
                 <p>© 2026 Virtual Fit Project</p>
             </footer>

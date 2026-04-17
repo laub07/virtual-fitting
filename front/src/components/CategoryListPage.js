@@ -1,7 +1,6 @@
 import React from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import "./CategoryListPage.css";
-
 
 const categories = [
     {
@@ -186,6 +185,7 @@ const categories = [
 
 const CategoryListPage = () => {
     const { type } = useParams();
+    const navigate = useNavigate();
 
     const [wishlist, setWishlist] = React.useState([]);
     const [cart, setCart] = React.useState([]);
@@ -198,11 +198,25 @@ const CategoryListPage = () => {
         setCart(savedCart);
     }, []);
 
+    const checkLogin = () => {
+        const token = sessionStorage.getItem("Authorization");
+
+        if (!token) {
+            alert("로그인 후 이용 가능합니다.\n" +
+                "로그인 페이지로 이동하시겠습니까?");
+            navigate("/login");
+            return false;
+        }
+        return true;
+    };
+
     const selectedCategory = categories.find(
         (category) => category.path === type
     );
 
     const toggleWishlist = (product) => {
+        if (!checkLogin()) return;
+
         const isExist = wishlist.some((item) => item.id === product.id);
 
         let updatedWishlist;
@@ -219,13 +233,15 @@ const CategoryListPage = () => {
     const isWished = (id) => wishlist.some((item) => item.id === id);
 
     const toggleCart = (product) => {
+        if (!checkLogin()) return;
+
         const isExist = cart.some((item) => item.id === product.id);
 
         let updatedCart;
         if (isExist) {
             updatedCart = cart.filter((item) => item.id !== product.id);
         } else {
-            updatedCart = [...cart, product];
+            updatedCart = [...cart, { ...product, quantity: 1 }];
         }
 
         setCart(updatedCart);
@@ -233,8 +249,6 @@ const CategoryListPage = () => {
     };
 
     const isInCart = (id) => cart.some((item) => item.id === id);
-
-
 
     if (!selectedCategory) {
         return (
