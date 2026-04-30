@@ -45,7 +45,7 @@
 
 .mypage-hero {
     padding: 50px 50px 50px;
-    background-color: #FCF0E6;
+    background-color: #fdf1e7;
 }
 
 
@@ -248,4 +248,12 @@
 
 .category-item:hover {
     background-color: #f5f5f5;
+}
+
+.footer {
+    text-align: center;
+    padding: 20px;
+    background-color: #fdf1e7;
+    color: #7a5c49;
+    margin-top: 20px;
 }

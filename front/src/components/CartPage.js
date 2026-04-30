@@ -6,25 +6,41 @@ function CartPage() {
     const [cartItems, setCartItems] = useState([]);
 
     useEffect(() => {
-        fetch("http://localhost:8080/api/cart")
-            .then(res => res.json())
-            .then(data => setCartItems(data))
-            .catch(err => console.error(err));
+        const token = sessionStorage.getItem("Authorization");
+
+        if (token) {
+            const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
+            setCartItems(savedCart);
+        } else {
+            setCartItems([]);
+        }
     }, []);
 
-    const handleRemoveItem = (id) => {
-        fetch(`http://localhost:8080/api/cart/${id}`, {
-            method: "DELETE",
-        })
-            .then(() => {
-                const updatedCart = cartItems.filter(item => item.id !== id);
-                setCartItems(updatedCart);
-            })
-            .catch(err => console.error(err));
+    const handleRemoveItem = (indexToRemove) => {
+        const updatedCart = cartItems.filter((_, index) => index !== indexToRemove);
+        setCartItems(updatedCart);
+        localStorage.setItem("cart", JSON.stringify(updatedCart));
+    };
+
+    const increaseQty = (index) => {
+        const updated = [...cartItems];
+        updated[index].quantity = (updated[index].quantity || 1) + 1;
+        setCartItems(updated);
+        localStorage.setItem("cart", JSON.stringify(updated));
+    };
+
+    const decreaseQty = (index) => {
+        const updated = [...cartItems];
+
+        if ((updated[index].quantity || 1) > 1) {
+            updated[index].quantity -= 1;
+            setCartItems(updated);
+            localStorage.setItem("cart", JSON.stringify(updated));
+        }
     };
 
     const totalPrice = cartItems.reduce((sum, item) => {
-        return sum + Number(item.price || 0);
+        return sum + (item.price * (item.quantity || 1));
     }, 0);
 
     return (
@@ -35,7 +51,6 @@ function CartPage() {
                         <img src="/로고1.png" alt="Fit on X 로고" className="logo-img" />
                     </Link>
                 </h2>
-
                 <div className="menu">
                     <Link to="/category">카테고리</Link>
                     <Link to="/recommend">추천</Link>
@@ -51,34 +66,34 @@ function CartPage() {
                 {cartItems.length === 0 ? (
                     <div className="empty-cart">
                         <p>장바구니가 비어 있습니다.</p>
-                        <Link to="/category" className="shop-link">
-                            상품 보러가기
-                        </Link>
+                        <Link to="/category" className="shop-link">상품 보러가기</Link>
                     </div>
                 ) : (
                     <>
                         <div className="cart-list">
-                            {cartItems.map((item) => (
-                                <div className="cart-card" key={item.id}>
-                                    {item.image && (
-                                        <img
-                                            src={item.image}
-                                            alt={item.name}
-                                            className="cart-image"
-                                        />
-                                    )}
+                            {cartItems.map((item, index) => (
+                                <div className="cart-card" key={index}>
+                                    <img src={item.image} alt={item.name} className="cart-image" />
 
                                     <div className="cart-info">
                                         <h3>{item.name}</h3>
-                                        <p>{Number(item.price).toLocaleString()}원</p>
+                                        <p>{item.price.toLocaleString()}원</p>
                                     </div>
 
-                                    <button
-                                        className="remove-btn"
-                                        onClick={() => handleRemoveItem(item.id)}
-                                    >
-                                        삭제
-                                    </button>
+                                    <div className="item-actions">
+                                        <div className="quantity-box">
+                                            <button onClick={() => decreaseQty(index)}>-</button>
+                                            <span>{item.quantity || 1}</span>
+                                            <button onClick={() => increaseQty(index)}>+</button>
+                                        </div>
+
+                                        <button
+                                            className="remove-btn"
+                                            onClick={() => handleRemoveItem(index)}
+                                        >
+                                            삭제
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
                         </div>

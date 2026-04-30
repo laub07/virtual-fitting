@@ -67,7 +67,7 @@ function LoginPage() {
                         <span className="divider">|</span>
                         <Link to="/find-password" className="secondary-btn">비밀번호 찾기</Link>
                         <span className="divider">|</span>
-                        <Link to="/register" className="secondary-btn">회원가입</Link>
+                        <Link to="/signup" className="secondary-btn">회원가입</Link>
                     </div>
                 </form>
             </div>
