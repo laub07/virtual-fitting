@@ -2,19 +2,25 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "./CartPage.css";
 
-
 function CartPage() {
     const [cartItems, setCartItems] = useState([]);
 
     useEffect(() => {
-        const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
-        setCartItems(savedCart);
+        fetch("http://localhost:8080/api/cart")
+            .then(res => res.json())
+            .then(data => setCartItems(data))
+            .catch(err => console.error(err));
     }, []);
 
-    const handleRemoveItem = (indexToRemove) => {
-        const updatedCart = cartItems.filter((_, index) => index !== indexToRemove);
-        setCartItems(updatedCart);
-        localStorage.setItem("cart", JSON.stringify(updatedCart));
+    const handleRemoveItem = (id) => {
+        fetch(`http://localhost:8080/api/cart/${id}`, {
+            method: "DELETE",
+        })
+            .then(() => {
+                const updatedCart = cartItems.filter(item => item.id !== id);
+                setCartItems(updatedCart);
+            })
+            .catch(err => console.error(err));
     };
 
     const totalPrice = cartItems.reduce((sum, item) => {
@@ -29,6 +35,7 @@ function CartPage() {
                         <img src="/로고1.png" alt="Fit on X 로고" className="logo-img" />
                     </Link>
                 </h2>
+
                 <div className="menu">
                     <Link to="/category">카테고리</Link>
                     <Link to="/recommend">추천</Link>
@@ -36,7 +43,6 @@ function CartPage() {
                     <Link to="/cart">장바구니</Link>
                     <Link to="/mypage">마이페이지</Link>
                 </div>
-
             </header>
 
             <section className="cart-section">
@@ -45,23 +51,31 @@ function CartPage() {
                 {cartItems.length === 0 ? (
                     <div className="empty-cart">
                         <p>장바구니가 비어 있습니다.</p>
-                        <Link to="/category" className="shop-link">상품 보러가기</Link>
+                        <Link to="/category" className="shop-link">
+                            상품 보러가기
+                        </Link>
                     </div>
                 ) : (
                     <>
                         <div className="cart-list">
-                            {cartItems.map((item, index) => (
-                                <div className="cart-card" key={index}>
+                            {cartItems.map((item) => (
+                                <div className="cart-card" key={item.id}>
                                     {item.image && (
-                                        <img src={item.image} alt={item.name} className="cart-image" />
+                                        <img
+                                            src={item.image}
+                                            alt={item.name}
+                                            className="cart-image"
+                                        />
                                     )}
+
                                     <div className="cart-info">
                                         <h3>{item.name}</h3>
-                                        <p>{item.price}원</p>
+                                        <p>{Number(item.price).toLocaleString()}원</p>
                                     </div>
+
                                     <button
                                         className="remove-btn"
-                                        onClick={() => handleRemoveItem(index)}
+                                        onClick={() => handleRemoveItem(item.id)}
                                     >
                                         삭제
                                     </button>
@@ -76,7 +90,7 @@ function CartPage() {
                     </>
                 )}
             </section>
-            {/* Footer */}
+
             <footer className="footer">
                 <p>© 2026 Virtual Fit Project</p>
             </footer>
