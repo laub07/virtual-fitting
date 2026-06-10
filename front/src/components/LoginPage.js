@@ -17,6 +17,7 @@ function LoginPage() {
 
         if (response.message === '로그인 성공') {
             setError(null);
+            sessionStorage.setItem('userId', response.id);
             sessionStorage.setItem('Role', response.role);
             sessionStorage.setItem('Username', response.username);
 

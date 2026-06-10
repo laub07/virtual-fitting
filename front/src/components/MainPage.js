@@ -88,6 +88,20 @@ const MainPage = () => {
         setDisplayProducts(updatedClickedProducts.slice(0, 3));
     };
 
+    const startVirtualFitting = async () => {
+    try {
+        const response = await fetch("http://localhost:8080/api/fitting/start", {
+            method: "POST",
+        });
+
+        const result = await response.text();
+        alert(result);
+    } catch (error) {
+        console.error(error);
+        alert("가상 피팅 실행 실패");
+    }
+};
+
     return (
         <div className="main-container">
             {/* Navbar */}
@@ -106,7 +120,9 @@ const MainPage = () => {
             <section className="banner">
                 <h1>가상으로 미리 입어보세요</h1>
                 <p>웹캠으로 나에게 딱 맞는 사이즈 찾기</p>
-                <button className="fit-btn">가상 피팅 시작</button>
+                <button className="fit-btn" onClick={startVirtualFitting}>
+    가상 피팅 시작
+</button>
             </section>
 
             {/* 카테고리 */}

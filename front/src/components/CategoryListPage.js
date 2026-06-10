@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
+import { addWishlist, removeWishlist, getWishlist } from "../api/user/wishlistApi";
 import "./CategoryListPage.css";
 
 const categories = [
@@ -190,23 +191,34 @@ const CategoryListPage = () => {
     const [wishlist, setWishlist] = React.useState([]);
     const [cart, setCart] = React.useState([]);
 
-    React.useEffect(() => {
-        const savedWishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
-        const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
+    const userId = Number(sessionStorage.getItem("userId"));
 
-        setWishlist(savedWishlist);
-        setCart(savedCart);
-    }, []);
+    const getProductNumber = (id) => {
+        return Number(id.split("-").pop()) + 15;
+    };
+
+    React.useEffect(() => {
+        if (userId) {
+            getWishlist(userId)
+                .then((data) => setWishlist(data))
+                .catch((err) => console.error("찜 목록 조회 실패:", err));
+
+            fetch(`http://localhost:8080/api/cart/${userId}`)
+                .then((res) => res.json())
+                .then((data) => setCart(data))
+                .catch((err) => console.error("장바구니 조회 실패:", err));
+        }
+    }, [userId]);
 
     const checkLogin = () => {
-        const token = sessionStorage.getItem("Authorization");
+        const loginUserId = sessionStorage.getItem("userId");
 
-        if (!token) {
-            alert("로그인 후 이용 가능합니다.\n" +
-                "로그인 페이지로 이동하시겠습니까?");
+        if (!loginUserId) {
+            alert("로그인 후 이용 가능합니다.\n로그인 페이지로 이동하시겠습니까?");
             navigate("/login");
             return false;
         }
+
         return true;
     };
 
@@ -214,41 +226,101 @@ const CategoryListPage = () => {
         (category) => category.path === type
     );
 
-    const toggleWishlist = (product) => {
+    const toggleWishlist = async (product) => {
         if (!checkLogin()) return;
 
-        const isExist = wishlist.some((item) => item.id === product.id);
+        const productNumber = getProductNumber(product.id);
 
-        let updatedWishlist;
-        if (isExist) {
-            updatedWishlist = wishlist.filter((item) => item.id !== product.id);
-        } else {
-            updatedWishlist = [...wishlist, product];
+        const isExist = wishlist.some(
+            (item) => Number(item.productId) === productNumber
+        );
+
+        try {
+            if (isExist) {
+                await removeWishlist(userId, productNumber);
+
+                setWishlist((prev) =>
+                    prev.filter((item) => Number(item.productId) !== productNumber)
+                );
+            } else {
+                await addWishlist({
+                    userId: userId,
+                    productId: productNumber,
+                });
+
+                setWishlist((prev) => [
+                    ...prev,
+                    {
+                        productId: productNumber,
+                    },
+                ]);
+            }
+        } catch (err) {
+            console.error(err);
+            alert("찜 처리 중 오류가 발생했습니다.");
         }
-
-        setWishlist(updatedWishlist);
-        localStorage.setItem("wishlist", JSON.stringify(updatedWishlist));
     };
 
-    const isWished = (id) => wishlist.some((item) => item.id === id);
+    const isWished = (id) => {
+        const productNumber = getProductNumber(id);
+        return wishlist.some((item) => Number(item.productId) === productNumber);
+    };
 
     const toggleCart = (product) => {
         if (!checkLogin()) return;
 
-        const isExist = cart.some((item) => item.id === product.id);
+        const productNumber = getProductNumber(product.id);
 
-        let updatedCart;
+        const isExist = cart.some(
+            (item) => Number(item.productId) === productNumber
+        );
+
         if (isExist) {
-            updatedCart = cart.filter((item) => item.id !== product.id);
-        } else {
-            updatedCart = [...cart, { ...product, quantity: 1 }];
+            alert("이미 장바구니에 담긴 상품입니다.");
+            return;
         }
 
-        setCart(updatedCart);
-        localStorage.setItem("cart", JSON.stringify(updatedCart));
+        const cartData = {
+            userId: userId,
+            productId: productNumber,
+            sizeId: productNumber,
+            quantity: 1,
+        };
+
+        fetch("http://localhost:8080/api/cart", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(cartData),
+        })
+            .then((res) => {
+                if (!res.ok) {
+                    throw new Error("장바구니 추가 실패");
+                }
+                return res.json();
+            })
+            .then(() => {
+                setCart((prev) => [
+                    ...prev,
+                    {
+                        productId: productNumber,
+                        quantity: 1,
+                    },
+                ]);
+
+                alert("장바구니에 추가되었습니다!");
+            })
+            .catch((err) => {
+                console.error("장바구니 추가 실패:", err);
+                alert("장바구니 추가 중 오류가 발생했습니다.");
+            });
     };
 
-    const isInCart = (id) => cart.some((item) => item.id === id);
+    const isInCart = (id) => {
+        const productNumber = getProductNumber(id);
+        return cart.some((item) => Number(item.productId) === productNumber);
+    };
 
     if (!selectedCategory) {
         return (
@@ -267,6 +339,7 @@ const CategoryListPage = () => {
                         <img src="/로고1.png" alt="Fit on X 로고" className="logo-img" />
                     </Link>
                 </h2>
+
                 <div className="menu">
                     <Link to="/category">카테고리</Link>
                     <Link to="/recommend">추천</Link>
