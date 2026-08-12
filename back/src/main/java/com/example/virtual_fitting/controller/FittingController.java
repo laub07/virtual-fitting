@@ -14,11 +14,11 @@ public class FittingController {
         try {
 
             ProcessBuilder pb = new ProcessBuilder(
-                    "C:\\dev\\virtual-fitting\\FASHIONNET\\venv\\Scripts\\python.exe",
+                    "C:\\dev\\virtual-fitting\\FASHIONNET\\venv\\Scripts\\python.exe", // 언니 경로에 맞게 변경
                     "main.py"
             );
 
-            pb.directory(new File("C:\\dev\\virtual-fitting\\FASHIONNET"));
+            pb.directory(new File("C:\\dev\\virtual-fitting\\FASHIONNET")); // 언니 경로에 맞게 변경
 
             pb.redirectErrorStream(true);
             pb.start();
