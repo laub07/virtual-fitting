@@ -1,0 +1,1271 @@
+
+import os
+import cv2
+import numpy as np
+import mediapipe as mp
+import tempfile
+import threading
+
+from datetime import datetime
+from PIL import Image, ImageDraw, ImageFont
+from gradio_client import Client, handle_file
+
+
+# ==========================================
+# 1. 기본 설정
+# ==========================================
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+CATVTON_API_URL = os.environ.get(
+    "CATVTON_API_URL",
+    "https://34123d0451ff45c26a.gradio.live"
+).rstrip("/")
+
+CLOTHES_DIR = os.path.join(BASE_DIR, "clothes")
+RESULT_DIR = os.path.join(BASE_DIR, "ai_results")
+CAPTURE_DIR = os.path.join(BASE_DIR, "captures")
+
+os.makedirs(RESULT_DIR, exist_ok=True)
+os.makedirs(CAPTURE_DIR, exist_ok=True)
+
+ai_state = {
+    "running": False,
+    "result": None,
+    "error": None,
+}
+
+ai_lock = threading.Lock()
+
+
+# ==========================================
+# 2. 한글 출력 함수
+# ==========================================
+
+def put_text_korean(
+    frame,
+    text,
+    position,
+    font_size=20,
+    color=(0, 0, 0)
+):
+    rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    pil_image = Image.fromarray(rgb)
+
+    draw = ImageDraw.Draw(pil_image)
+
+    try:
+        font = ImageFont.truetype(
+            "C:/Windows/Fonts/malgun.ttf",
+            font_size
+        )
+    except OSError:
+        font = ImageFont.load_default()
+
+    draw.text(
+        position,
+        text,
+        font=font,
+        fill=color
+    )
+
+    return cv2.cvtColor(
+        np.array(pil_image),
+        cv2.COLOR_RGB2BGR
+    )
+
+
+# ==========================================
+# 3. 버튼 그리기
+# ==========================================
+
+def draw_button(
+    frame,
+    box,
+    text,
+    background=(245, 245, 245),
+    text_color=(50, 50, 50),
+    selected=False
+):
+    x1, y1, x2, y2 = box
+
+    cv2.rectangle(
+        frame,
+        (x1, y1),
+        (x2, y2),
+        background,
+        -1
+    )
+
+    border = (
+        (255, 120, 50)
+        if selected
+        else (180, 180, 180)
+    )
+
+    cv2.rectangle(
+        frame,
+        (x1, y1),
+        (x2, y2),
+        border,
+        2
+    )
+
+    frame = put_text_korean(
+        frame,
+        text,
+        (x1 + 10, y1 + 12),
+        17,
+        text_color
+    )
+
+    return frame
+
+
+def in_box(x, y, box):
+    x1, y1, x2, y2 = box
+
+    return (
+        x1 <= x <= x2
+        and y1 <= y <= y2
+    )
+
+
+# ==========================================
+# 4. 투명 PNG 이미지 합성
+# ==========================================
+
+def overlay_png(
+    background,
+    overlay,
+    x,
+    y,
+    width,
+    height
+):
+    if overlay is None:
+        return background
+
+    if width <= 0 or height <= 0:
+        return background
+
+    overlay = cv2.resize(
+        overlay,
+        (width, height),
+        interpolation=cv2.INTER_LINEAR
+    )
+
+    bg_h, bg_w = background.shape[:2]
+
+    x1 = max(0, x)
+    y1 = max(0, y)
+
+    x2 = min(bg_w, x + width)
+    y2 = min(bg_h, y + height)
+
+    if x1 >= x2 or y1 >= y2:
+        return background
+
+    ox1 = x1 - x
+    oy1 = y1 - y
+
+    ox2 = ox1 + (x2 - x1)
+    oy2 = oy1 + (y2 - y1)
+
+    cropped = overlay[oy1:oy2, ox1:ox2]
+
+    if cropped.ndim == 2:
+        cropped = cv2.cvtColor(
+            cropped,
+            cv2.COLOR_GRAY2BGR
+        )
+
+    roi = background[y1:y2, x1:x2]
+
+    if cropped.shape[2] == 4:
+        alpha = (
+            cropped[:, :, 3:4].astype(np.float32)
+            / 255.0
+        )
+
+        foreground = (
+            cropped[:, :, :3].astype(np.float32)
+        )
+
+        blended = (
+            foreground * alpha
+            + roi.astype(np.float32) * (1 - alpha)
+        )
+
+        background[y1:y2, x1:x2] = (
+            blended.astype(np.uint8)
+        )
+
+    else:
+        background[y1:y2, x1:x2] = cropped[:, :, :3]
+
+    return background
+
+
+# ==========================================
+# 5. 의상 이미지 변환
+# ==========================================
+
+def prepare_cloth_image(cloth_image):
+    """
+    투명 배경 RGBA 의상을
+    흰색 배경의 BGR 이미지로 변환
+    """
+
+    if cloth_image is None:
+        raise RuntimeError(
+            "의상 이미지가 없습니다."
+        )
+
+    if cloth_image.ndim == 2:
+        return cv2.cvtColor(
+            cloth_image,
+            cv2.COLOR_GRAY2BGR
+        )
+
+    if cloth_image.shape[2] == 4:
+        alpha = (
+            cloth_image[:, :, 3:4].astype(np.float32)
+            / 255.0
+        )
+
+        bgr = (
+            cloth_image[:, :, :3].astype(np.float32)
+        )
+
+        white_background = np.full_like(
+            bgr,
+            255.0
+        )
+
+        result = (
+            bgr * alpha
+            + white_background * (1.0 - alpha)
+        )
+
+        return result.astype(np.uint8)
+
+    return cloth_image[:, :, :3].copy()
+
+
+# ==========================================
+# 6. CatVTON AI 피팅 생성
+# ==========================================
+
+def generate_catvton(person_frame, cloth_image):
+
+    try:
+        print("[CatVTON] AI 피팅 생성 시작")
+
+        # 웹캠 사진은 BGR 3채널
+        if person_frame.ndim != 3:
+            raise RuntimeError(
+                "웹캠 이미지 형식이 올바르지 않습니다."
+            )
+
+        person_frame = person_frame[:, :, :3].copy()
+
+        # 의상 투명 배경 제거
+        cloth_image = prepare_cloth_image(
+            cloth_image
+        )
+
+        # 두 이미지 모두 JPEG로 변환
+        success_person, person_buffer = cv2.imencode(
+            ".jpg",
+            person_frame
+        )
+
+        success_cloth, cloth_buffer = cv2.imencode(
+            ".jpg",
+            cloth_image
+        )
+
+        if not success_person or not success_cloth:
+            raise RuntimeError(
+                "이미지 JPEG 변환에 실패했습니다."
+            )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+
+            person_path = os.path.join(
+                temp_dir,
+                "person.jpg"
+            )
+
+            cloth_path = os.path.join(
+                temp_dir,
+                "cloth.jpg"
+            )
+
+            with open(person_path, "wb") as f:
+                f.write(person_buffer.tobytes())
+
+            with open(cloth_path, "wb") as f:
+                f.write(cloth_buffer.tobytes())
+
+            print("[CatVTON] 웹캠 이미지 준비 완료")
+            print("[CatVTON] 의상 이미지 준비 완료")
+
+            # 서버 연결
+            print("[CatVTON] Colab 서버 연결 중...")
+
+            client = Client(CATVTON_API_URL)
+
+            print("[CatVTON] 서버 연결 성공")
+            print("[CatVTON] AI 피팅 이미지 생성 요청...")
+
+            # Gradio ImageEditor 입력
+            person_input = {
+                "background": handle_file(person_path),
+                "layers": [],
+                "composite": handle_file(person_path)
+            }
+
+            result = client.predict(
+                person_image=person_input,
+                cloth_image=handle_file(cloth_path),
+                cloth_type="upper",
+                num_inference_steps=30,
+                guidance_scale=2.5,
+                seed=2026,
+                show_type="result only",
+                api_name="/submit_function"
+            )
+
+            print("[CatVTON] 서버 응답:", result)
+
+            # 결과 경로 추출
+            if isinstance(result, dict):
+                result_path = result.get("path")
+
+            elif isinstance(result, str):
+                result_path = result
+
+            else:
+                raise RuntimeError(
+                    "예상하지 못한 결과 형식: "
+                    + str(type(result))
+                )
+
+            if not result_path:
+                raise RuntimeError(
+                    "결과 이미지 경로가 없습니다."
+                )
+
+            # 결과 이미지 읽기
+            result_image = cv2.imread(
+                result_path,
+                cv2.IMREAD_COLOR
+            )
+
+            if result_image is None:
+                raise RuntimeError(
+                    "결과 이미지를 읽을 수 없습니다."
+                )
+
+            timestamp = datetime.now().strftime(
+                "%Y%m%d_%H%M%S_%f"
+            )
+
+            filename = os.path.join(
+                RESULT_DIR,
+                f"catvton_{timestamp}.png"
+            )
+
+            saved = cv2.imwrite(
+                filename,
+                result_image
+            )
+
+            if not saved:
+                raise RuntimeError(
+                    "결과 이미지 저장 실패"
+                )
+
+            with ai_lock:
+                ai_state["result"] = result_image
+
+            print("[CatVTON] AI 피팅 생성 완료!")
+            print("[CatVTON] 저장 위치:", filename)
+
+    except Exception as e:
+        print("[CatVTON] 오류:", repr(e))
+
+        with ai_lock:
+            ai_state["error"] = str(e)
+
+    finally:
+        with ai_lock:
+            ai_state["running"] = False
+
+
+# ==========================================
+# 7. 의상 데이터 불러오기
+# ==========================================
+
+def load_clothes():
+
+    filenames = [
+        ("반팔티 1", "clothes1.png"),
+        ("반팔티 2", "clothes2.png"),
+        ("반팔티 3", "clothes3.png"),
+        ("니트 1", "knit1.png"),
+        ("니트 2", "knit2.png"),
+        ("니트 3", "knit3.png"),
+    ]
+
+    clothes = []
+
+    for name, filename in filenames:
+
+        path = os.path.join(
+            CLOTHES_DIR,
+            filename
+        )
+
+        image = cv2.imread(
+            path,
+            cv2.IMREAD_UNCHANGED
+        )
+
+        if image is None:
+            print("[경고] 의상 이미지 없음:", path)
+            continue
+
+        clothes.append({
+            "name": name,
+            "img": image,
+            "filename": filename
+        })
+
+    return clothes
+
+
+# ==========================================
+# 8. 옷장 UI
+# ==========================================
+
+def draw_closet(
+    frame,
+    clothes,
+    selected_index,
+    closet_page,
+    wishlist,
+    cart
+):
+
+    h, w = frame.shape[:2]
+
+    panel_x1 = 20
+    panel_y1 = 90
+
+    panel_x2 = min(w - 20, 600)
+    panel_y2 = h - 105
+
+    if panel_y2 <= panel_y1:
+        return frame, []
+
+    overlay = frame.copy()
+
+    cv2.rectangle(
+        overlay,
+        (panel_x1, panel_y1),
+        (panel_x2, panel_y2),
+        (250, 250, 250),
+        -1
+    )
+
+    frame = cv2.addWeighted(
+        overlay,
+        0.93,
+        frame,
+        0.07,
+        0
+    )
+
+    clickable = []
+
+    if closet_page is None:
+
+        frame = put_text_korean(
+            frame,
+            "MY CLOSET",
+            (panel_x1 + 20, panel_y1 + 20),
+            23,
+            (50, 50, 50)
+        )
+
+        wish_box = (
+            panel_x1 + 20,
+            panel_y1 + 75,
+            panel_x2 - 20,
+            panel_y1 + 130
+        )
+
+        cart_box = (
+            panel_x1 + 20,
+            panel_y1 + 150,
+            panel_x2 - 20,
+            panel_y1 + 205
+        )
+
+        frame = draw_button(
+            frame,
+            wish_box,
+            "♥ 찜한 상품",
+            (245, 225, 240)
+        )
+
+        frame = draw_button(
+            frame,
+            cart_box,
+            "장바구니",
+            (235, 245, 250)
+        )
+
+        clickable.append(
+            ("wishlist", wish_box)
+        )
+
+        clickable.append(
+            ("cart", cart_box)
+        )
+
+    else:
+
+        back_box = (
+            panel_x1 + 15,
+            panel_y1 + 15,
+            panel_x1 + 105,
+            panel_y1 + 60
+        )
+
+        frame = draw_button(
+            frame,
+            back_box,
+            "< 뒤로"
+        )
+
+        clickable.append(
+            ("back", back_box)
+        )
+
+        title = (
+            "♥ 찜한 상품"
+            if closet_page == "wishlist"
+            else "장바구니"
+        )
+
+        frame = put_text_korean(
+            frame,
+            title,
+            (panel_x1 + 125, panel_y1 + 25),
+            21,
+            (60, 60, 60)
+        )
+
+        indices = (
+            wishlist
+            if closet_page == "wishlist"
+            else cart
+        )
+
+        if not indices:
+
+            frame = put_text_korean(
+                frame,
+                "담긴 상품이 없습니다.",
+                (panel_x1 + 30, panel_y1 + 110),
+                18,
+                (100, 100, 100)
+            )
+
+        else:
+
+            content_y = panel_y1 + 85
+            content_w = panel_x2 - panel_x1 - 40
+
+            cols = min(3, len(indices))
+            card_gap = 10
+
+            card_w = max(
+                40,
+                (content_w - card_gap * (cols - 1)) // cols
+            )
+
+            card_h = 135
+
+            for order, index in enumerate(indices):
+
+                if index >= len(clothes):
+                    continue
+
+                col = order % cols
+                row = order // cols
+
+                x1 = (
+                    panel_x1 + 20
+                    + col * (card_w + card_gap)
+                )
+
+                y1 = (
+                    content_y
+                    + row * (card_h + 10)
+                )
+
+                x2 = x1 + card_w
+                y2 = y1 + card_h
+
+                if y2 > panel_y2:
+                    continue
+
+                item = clothes[index]
+
+                selected = (
+                    index == selected_index
+                )
+
+                frame = draw_button(
+                    frame,
+                    (x1, y1, x2, y2),
+                    item["name"],
+                    (255, 255, 255),
+                    selected=selected
+                )
+
+                image = item["img"]
+
+                ih, iw = image.shape[:2]
+
+                scale = min(
+                    (card_w - 20) / iw,
+                    85 / ih
+                )
+
+                thumb_w = max(
+                    1,
+                    int(iw * scale)
+                )
+
+                thumb_h = max(
+                    1,
+                    int(ih * scale)
+                )
+
+                tx = x1 + (card_w - thumb_w) // 2
+                ty = y1 + 45
+
+                frame = overlay_png(
+                    frame,
+                    image,
+                    tx,
+                    ty,
+                    thumb_w,
+                    thumb_h
+                )
+
+                clickable.append(
+                    (f"item:{index}", (x1, y1, x2, y2))
+                )
+
+    return frame, clickable
+
+
+# ==========================================
+# 9. 메인 가상 피팅
+# ==========================================
+
+def run_virtual_fitting():
+
+    print("가상 피팅 프로그램 시작")
+
+    clothes = load_clothes()
+
+    if not clothes:
+        print(
+            "[오류] clothes 폴더에서 "
+            "의상 이미지를 찾지 못했습니다."
+        )
+        return
+
+    current_idx = 0
+
+    # 기본 찜 / 장바구니 데이터
+    wishlist = [
+        i for i, item in enumerate(clothes)
+        if item["filename"] in [
+            "clothes1.png",
+            "clothes2.png",
+            "knit1.png"
+        ]
+    ]
+
+    cart = [
+        i for i, item in enumerate(clothes)
+        if item["filename"] in [
+            "clothes3.png",
+            "knit2.png",
+            "knit3.png"
+        ]
+    ]
+
+    is_closet_open = False
+    closet_page = None
+
+    last_hover_target = None
+    was_pinching = False
+
+    capture_count = 1
+
+    # ======================================
+    # MediaPipe 설정
+    # ======================================
+
+    mp_pose = mp.solutions.pose
+    mp_hands = mp.solutions.hands
+
+    pose = mp_pose.Pose(
+        static_image_mode=False,
+        model_complexity=1,
+        min_detection_confidence=0.5,
+        min_tracking_confidence=0.5
+    )
+
+    hands = mp_hands.Hands(
+        static_image_mode=False,
+        max_num_hands=1,
+        min_detection_confidence=0.5,
+        min_tracking_confidence=0.5
+    )
+
+    # ======================================
+    # 웹캠 실행
+    # ======================================
+
+    cap = cv2.VideoCapture(
+        0,
+        cv2.CAP_DSHOW
+    )
+
+    if not cap.isOpened():
+        cap.release()
+        cap = cv2.VideoCapture(0)
+
+    if not cap.isOpened():
+        print("[오류] 카메라를 열 수 없습니다.")
+        hands.close()
+        pose.close()
+        return
+
+    print("[성공] 웹캠 연결 완료")
+    print("[안내] 종료하려면 q를 누르세요.")
+
+    try:
+
+        while True:
+
+            ret, frame = cap.read()
+
+            if not ret:
+                print("[오류] 웹캠 프레임 읽기 실패")
+                break
+
+            frame = cv2.flip(frame, 1)
+
+            h, w = frame.shape[:2]
+
+            # AI 피팅에는 합성 전 원본을 사용
+            original_frame = frame.copy()
+
+            rgb = cv2.cvtColor(
+                original_frame,
+                cv2.COLOR_BGR2RGB
+            )
+
+            current_item = clothes[current_idx]
+            current_cloth = current_item["img"]
+
+            # ==================================
+            # 10. MediaPipe Pose
+            # ==================================
+
+            pose_result = pose.process(rgb)
+
+            if pose_result.pose_landmarks:
+
+                landmarks = pose_result.pose_landmarks.landmark
+
+                left_shoulder = landmarks[
+                    mp_pose.PoseLandmark.LEFT_SHOULDER
+                ]
+
+                right_shoulder = landmarks[
+                    mp_pose.PoseLandmark.RIGHT_SHOULDER
+                ]
+
+                left_hip = landmarks[
+                    mp_pose.PoseLandmark.LEFT_HIP
+                ]
+
+                right_hip = landmarks[
+                    mp_pose.PoseLandmark.RIGHT_HIP
+                ]
+
+                ls = np.array([
+                    int(left_shoulder.x * w),
+                    int(left_shoulder.y * h)
+                ])
+
+                rs = np.array([
+                    int(right_shoulder.x * w),
+                    int(right_shoulder.y * h)
+                ])
+
+                lh = np.array([
+                    int(left_hip.x * w),
+                    int(left_hip.y * h)
+                ])
+
+                rh = np.array([
+                    int(right_hip.x * w),
+                    int(right_hip.y * h)
+                ])
+
+                shoulder_center = (ls + rs) // 2
+                hip_center = (lh + rh) // 2
+
+                shoulder_width = np.linalg.norm(
+                    ls - rs
+                )
+
+                torso_height = np.linalg.norm(
+                    hip_center - shoulder_center
+                )
+
+                cloth_width = int(
+                    shoulder_width * 2.5
+                )
+
+                cloth_height = int(
+                    torso_height * 1.8
+                )
+
+                cloth_x = int(
+                    shoulder_center[0]
+                    - cloth_width / 2
+                )
+
+                cloth_y = int(
+                    shoulder_center[1]
+                    - torso_height * 0.45
+                )
+
+                frame = overlay_png(
+                    frame,
+                    current_cloth,
+                    cloth_x,
+                    cloth_y,
+                    cloth_width,
+                    cloth_height
+                )
+
+            # ==================================
+            # 11. 손 인식
+            # ==================================
+
+            hands_result = hands.process(rgb)
+
+            finger_tip = None
+            thumb_tip = None
+
+            if hands_result.multi_hand_landmarks:
+
+                hand = (
+                    hands_result.multi_hand_landmarks[0]
+                )
+
+                index = hand.landmark[
+                    mp_hands.HandLandmark.INDEX_FINGER_TIP
+                ]
+
+                thumb = hand.landmark[
+                    mp_hands.HandLandmark.THUMB_TIP
+                ]
+
+                finger_tip = (
+                    int(index.x * w),
+                    int(index.y * h)
+                )
+
+                thumb_tip = (
+                    int(thumb.x * w),
+                    int(thumb.y * h)
+                )
+
+            pinch = False
+
+            if finger_tip and thumb_tip:
+
+                distance = np.linalg.norm(
+                    np.array(finger_tip)
+                    - np.array(thumb_tip)
+                )
+
+                pinch = distance < 35
+
+            # ==================================
+            # 12. UI 버튼 위치
+            # ==================================
+
+            closet_btn = (
+                20, 20, 150, 70
+            )
+
+            capture_btn = (
+                20, h - 80, 175, h - 25
+            )
+
+            ai_btn = (
+                w - 180,
+                h - 80,
+                w - 20,
+                h - 25
+            )
+
+            prev_btn = (
+                20,
+                h // 2 - 25,
+                80,
+                h // 2 + 25
+            )
+
+            next_btn = (
+                w - 80,
+                h // 2 - 25,
+                w - 20,
+                h // 2 + 25
+            )
+
+            frame = draw_button(
+                frame,
+                closet_btn,
+                "CLOSET",
+                (255, 240, 230)
+            )
+
+            frame = draw_button(
+                frame,
+                capture_btn,
+                "화면 캡처",
+                (230, 255, 230)
+            )
+
+            frame = draw_button(
+                frame,
+                ai_btn,
+                "AI 피팅 생성",
+                (255, 235, 230)
+            )
+
+            if not is_closet_open:
+
+                frame = draw_button(
+                    frame,
+                    prev_btn,
+                    "< "
+                )
+
+                frame = draw_button(
+                    frame,
+                    next_btn,
+                    " >"
+                )
+
+            # ==================================
+            # 13. 옷장 UI
+            # ==================================
+
+            closet_clickable = []
+
+            if is_closet_open:
+
+                frame, closet_clickable = draw_closet(
+                    frame,
+                    clothes,
+                    current_idx,
+                    closet_page,
+                    wishlist,
+                    cart
+                )
+
+            # ==================================
+            # 14. 손가락 버튼 선택
+            # ==================================
+
+            hover_target = None
+
+            if finger_tip:
+
+                fx, fy = finger_tip
+
+                if in_box(fx, fy, closet_btn):
+                    hover_target = "CLOSET"
+
+                elif in_box(fx, fy, capture_btn):
+                    hover_target = "CAPTURE"
+
+                elif in_box(fx, fy, ai_btn):
+                    hover_target = "AI"
+
+                elif not is_closet_open:
+
+                    if in_box(fx, fy, prev_btn):
+                        hover_target = "PREV"
+
+                    elif in_box(fx, fy, next_btn):
+                        hover_target = "NEXT"
+
+                else:
+
+                    for name, box in closet_clickable:
+
+                        if in_box(fx, fy, box):
+                            hover_target = name
+                            break
+
+                cv2.circle(
+                    frame,
+                    finger_tip,
+                    9,
+                    (0, 255, 255),
+                    -1
+                )
+
+            # ==================================
+            # 15. 일반 버튼 처리
+            # ==================================
+
+            # 손가락이 버튼에 새로 들어왔을 때만 실행
+            if (
+                hover_target is not None
+                and hover_target != last_hover_target
+            ):
+
+                if hover_target == "CLOSET":
+
+                    is_closet_open = not is_closet_open
+                    closet_page = None
+
+                    print(
+                        "[옷장] 열림"
+                        if is_closet_open
+                        else "[옷장] 닫힘"
+                    )
+
+                elif hover_target == "CAPTURE":
+
+                    filename = os.path.join(
+                        CAPTURE_DIR,
+                        f"capture_{capture_count}.png"
+                    )
+
+                    if cv2.imwrite(filename, frame):
+                        print("[캡처] 저장:", filename)
+                        capture_count += 1
+
+                elif hover_target == "AI":
+
+                    with ai_lock:
+                        already_running = ai_state["running"]
+
+                    if already_running:
+                        print(
+                            "[CatVTON] 이미 생성 중입니다."
+                        )
+
+                    else:
+
+                        person_image = original_frame.copy()
+                        cloth_image = current_cloth.copy()
+
+                        with ai_lock:
+                            ai_state["running"] = True
+                            ai_state["result"] = None
+                            ai_state["error"] = None
+
+                        print(
+                            "[CatVTON] 선택한 옷:",
+                            current_item["name"]
+                        )
+
+                        threading.Thread(
+                            target=generate_catvton,
+                            args=(
+                                person_image,
+                                cloth_image
+                            ),
+                            daemon=True
+                        ).start()
+
+                elif hover_target == "PREV":
+
+                    current_idx = (
+                        current_idx - 1
+                    ) % len(clothes)
+
+                    print(
+                        "[의상]",
+                        clothes[current_idx]["name"]
+                    )
+
+                elif hover_target == "NEXT":
+
+                    current_idx = (
+                        current_idx + 1
+                    ) % len(clothes)
+
+                    print(
+                        "[의상]",
+                        clothes[current_idx]["name"]
+                    )
+
+            # ==================================
+            # 16. 옷장 내부 선택
+            # ==================================
+
+            if (
+                is_closet_open
+                and hover_target is not None
+                and pinch
+                and not was_pinching
+            ):
+
+                if hover_target == "wishlist":
+
+                    closet_page = "wishlist"
+
+                elif hover_target == "cart":
+
+                    closet_page = "cart"
+
+                elif hover_target == "back":
+
+                    closet_page = None
+
+                elif hover_target.startswith("item:"):
+
+                    selected = int(
+                        hover_target.split(":")[1]
+                    )
+
+                    current_idx = selected
+
+                    print(
+                        "[옷장] 의상 선택:",
+                        clothes[current_idx]["name"]
+                    )
+
+                    is_closet_open = False
+                    closet_page = None
+
+            last_hover_target = hover_target
+            was_pinching = pinch
+
+            # ==================================
+            # 17. AI 생성 상태 확인
+            # ==================================
+
+            with ai_lock:
+
+                ai_running = ai_state["running"]
+                result_image = ai_state["result"]
+                error_message = ai_state["error"]
+
+                ai_state["result"] = None
+                ai_state["error"] = None
+
+            if ai_running:
+
+                frame = put_text_korean(
+                    frame,
+                    "AI 피팅 생성 중...",
+                    (w // 2 - 100, 25),
+                    20,
+                    (255, 255, 255)
+                )
+
+            if result_image is not None:
+
+                cv2.imshow(
+                    "CatVTON AI Result",
+                    result_image
+                )
+
+                print(
+                    "[CatVTON] 결과 창 표시 완료"
+                )
+
+            if error_message is not None:
+
+                print(
+                    "[AI 피팅 오류]",
+                    error_message
+                )
+
+            # ==================================
+            # 18. 현재 의상 정보
+            # ==================================
+
+            frame = put_text_korean(
+                frame,
+                "선택한 옷: " + current_item["name"],
+                (w // 2 - 110, h - 65),
+                17,
+                (255, 255, 255)
+            )
+
+            # ==================================
+            # 19. 웹캠 화면 표시
+            # ==================================
+
+            cv2.imshow(
+                "AR Virtual Fitting NUI",
+                frame
+            )
+
+            key = cv2.waitKey(1) & 0xFF
+
+            if key == ord("q"):
+                break
+
+    finally:
+
+        cap.release()
+        hands.close()
+        pose.close()
+        cv2.destroyAllWindows()
+
+        print("[프로그램] 종료 완료")
+
+
+# ==========================================
+# 20. 프로그램 시작
+# ==========================================
+
+if __name__ == "__main__":
+
+    print("===================================")
+    print("FASHIONNET 가상 피팅 시스템")
+    print("CatVTON Gradio API 연동 버전")
+    print("===================================")
+
+    print("실행 파일:", os.path.abspath(__file__))
+    print("CatVTON URL:", CATVTON_API_URL)
+
+    run_virtual_fitting()

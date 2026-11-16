@@ -38,3 +38,4 @@ out/
 .vscode/
 FASHIONNET/venv/
 FASHIONNET/*.pth
+FASHIONNET/.venv/

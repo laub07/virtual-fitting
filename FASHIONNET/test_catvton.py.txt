@@ -1,0 +1,9 @@
+from gradio_client import Client
+
+CATVTON_URL = "https://a02ce4f0b6bf7a2755.gradio.live/"
+
+print("CatVTON 서버 연결 시도 중...")
+
+client = Client(CATVTON_URL)
+
+print("CatVTON 서버 연결 성공!")
