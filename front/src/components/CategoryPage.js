@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "./CategoryPage.css";
+import Header from "./Header";
 
 
 const categories = [
@@ -176,21 +177,7 @@ const categories = [
 const CategoryPage = () => {
     return (
         <div className="category-page-container">
-            <header className="navbar">
-                <h2 className="logo">
-                    <Link to="/" className="logo-link">
-                        <img src="/로고1.png" alt="Fit on X 로고" className="logo-img" />
-                    </Link>
-                </h2>
-                <div className="menu">
-                    <Link to="/category">카테고리</Link>
-                    <Link to="/recommend">추천</Link>
-                    <Link to="/wishlist">찜</Link>
-                    <Link to="/cart">장바구니</Link>
-                    <Link to="/mypage">마이페이지</Link>
-                </div>
-            </header>
-
+            <Header />
             <section className="category-header">
                 <h1>카테고리</h1>
                 <p>원하는 의류 카테고리를 선택해 보세요</p>

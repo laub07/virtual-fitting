@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "./MainPage.css";
-
+import Header from "./Header";
 
 const productData = [
     {
@@ -104,19 +104,7 @@ const MainPage = () => {
 
     return (
         <div className="main-container">
-            {/* Navbar */}
-            <header className="navbar">
-                <img src="/로고1.png" alt="로고1" />
-                <div className="menu">
-                    <Link to="/category">카테고리</Link>
-                    <Link to="/recommend">추천</Link>
-                    <Link to="/wishlist">찜</Link>
-                    <Link to="/cart">장바구니</Link>
-                    <Link to="/mypage">마이페이지</Link>
-                </div>
-            </header>
-
-            {/* 메인 배너 */}
+            <Header />
             <section className="banner">
                 <h1>가상으로 미리 입어보세요</h1>
                 <p>웹캠으로 나에게 딱 맞는 사이즈 찾기</p>

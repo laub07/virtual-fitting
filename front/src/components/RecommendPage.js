@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "./RecommendPage.css";
+import Header from "./Header";
 
 const cities = [
     ["서울",37.5665,126.978],["평택",36.9921,127.1129],["인천",37.4563,126.7052],
     ["수원",37.2636,127.0286],["대전",36.3504,127.3845],["대구",35.8714,128.6014],
     ["광주",35.1595,126.8526],["부산",35.1796,129.0756],["제주",33.4996,126.5312]
 ];
-// 프로젝트용 예시 규칙입니다. 개인의 추위 민감도에 따라 조절하세요.
+
 export function getOutfits(t) {
     if(t >= 28) return [["가볍고 시원하게","반팔 티셔츠","린넨 반바지"],["통기성 좋은 데일리룩","린넨 셔츠","얇은 와이드 팬츠"]];
     if(t >= 23) return [["산뜻한 데일리룩","반팔 티셔츠","코튼 팬츠"],["가벼운 외출","얇은 셔츠","린넨 팬츠"]];
@@ -78,9 +79,7 @@ export default function RecommendPage() {
     const rain = current && ([51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99].includes(current.weather_code) || current.precipitation > 0);
     const snow = current && [71,73,75,77,85,86].includes(current.weather_code);
     return <div className="wr-page">
-        <header className="wr-nav"><Link to="/" aria-label="메인 페이지"><img src="/로고1.png" alt="Fit on X"/></Link><nav aria-label="주 메뉴">
-            <Link to="/category">카테고리</Link><Link to="/recommend" aria-current="page">추천</Link><Link to="/wishlist">찜</Link><Link to="/cart">장바구니</Link><Link to="/mypage">마이페이지</Link>
-        </nav></header>
+        <Header />
         <main className="wr-main"><div className="wr-heading"><span>WEATHER & OUTFIT</span><h1>오늘 날씨엔, 이렇게 입어요</h1><p>지역을 고르면 날씨에 맞는 코디를 추천해드려요.</p></div>
             <section className="wr-panel" aria-labelledby="wr-location"><div className="wr-location-row"><label id="wr-location" htmlFor="wr-city">지역 선택</label><select id="wr-city" value={city} onChange={e=>setCity(e.target.value)}>{cities.map(([name])=><option key={name}>{name}</option>)}</select></div>
                 {loading && <p className="wr-state" role="status">{city} 날씨를 불러오는 중이에요…</p>}
@@ -90,7 +89,6 @@ export default function RecommendPage() {
                     <div className="wr-tip">{snow ? "❄️ 눈이 내려요. 미끄럼을 줄이는 신발과 따뜻한 겉옷을 챙겨요." : rain ? "☂️ 비가 내려요. 우산과 물에 강한 신발을 챙겨요." : daily.precipitation_probability_max?.[0] >= 50 ? "☂️ 오늘 비 예보가 있어요. 작은 우산을 챙겨요." : "오늘의 체감기온을 기준으로 코디를 골랐어요."}{daily.temperature_2m_max[0]-daily.temperature_2m_min[0] >= 10 && " 일교차가 커요. 벗기 쉬운 겉옷도 준비해요."}{current.wind_speed_10m >= 5 && " 바람이 강해요. 바람을 막는 겉옷을 고려해요."}</div>
                     <section className="wr-outfits" aria-labelledby="wr-outfit-title"><div className="wr-section-title"><div><p className="wr-eyebrow">TODAY’S PICK</p><h2 id="wr-outfit-title">오늘의 추천 의류</h2></div><span>{index+1} / {outfits.length}</span></div>
                         <div className="wr-carousel"><button aria-label="이전 코디" onClick={()=>setIndex(i=>(i-1+outfits.length)%outfits.length)}>‹</button><article className="wr-outfit" aria-live="polite"><div className="wr-art"><OutfitArt index={index}/><span>예시 코디</span></div><h3>{outfit[0]}</h3><p>{outfit[1]}<br/>{outfit[2]}</p></article><button aria-label="다음 코디" onClick={()=>setIndex(i=>(i+1)%outfits.length)}>›</button></div>
-                        <p className="wr-note">기온에 따른 예시 추천이며 옷장·상품 DB와는 아직 연결되지 않았어요.<br/>그림은 공통 예시이며, 실제 추천 품목은 위 이름을 확인해주세요.</p>
                     </section><p className="wr-source">날씨 기준: {current.time.replace("T"," ")} (한국시간) · <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Weather data by Open-Meteo</a></p></>}
             </section>
         </main><footer className="wr-footer">© 2026 Virtual Fit Project</footer>
