@@ -112,11 +112,11 @@ function MyPage() {
                     </div>
 
                     <div className="info-card">
-                        <h3>최근 본 상품</h3>
-                        <p>최근에 둘러본 상품 내역을 볼 수 있어요.</p>
-                        <button type="button" className="card-btn">
-                            확인하기
-                        </button>
+                        <h3>추천 상품</h3>
+                        <p>날씨 별 추천 내역을 볼 수 있어요.</p>
+                        <Link to="/recommend" className="card-link">
+                            보러가기
+                        </Link>
                     </div>
 
                     <div className="info-card">
