@@ -39,7 +39,7 @@
 
 /* ===== 회원 / 비회원 카드 ===== */
 .profile-card {
-    flex: 0 0 300px;
+    flex: 0 0 400px;
     padding: 28px;
     display: flex;
     flex-direction: column;
@@ -182,7 +182,7 @@
 .info-card h3 {
     margin: 0 0 14px;
     color: #5a3e2b;
-    font-size: 17px;
+    font-size: 30px;
 }
 
 .info-card p {
