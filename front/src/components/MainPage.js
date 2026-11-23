@@ -1,176 +1,138 @@
+
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import Header from "./Header";
 import "./MainPage.css";
 
-
-const productData = [
-    {
-        id: 1,
-        name: "기본 티셔츠",
-        image: "/top/short-tshirt/shirt.jpeg",
-        category: "top",
-    },
-    {
-        id: 2,
-        name: "청바지",
-        image: "/bottom/longpant/pants.jpeg",
-        category: "bottom",
-    },
-    {
-        id: 3,
-        name: "후드티",
-        image: "/top/hoodie/hoodie1.jpeg",
-        category: "top",
-    },
-    {
-        id: 4,
-        name: "슬랙스",
-        image: "/bottom/slacks/slacks1.jpeg",
-        category: "bottom",
-    },
-    {
-        id: 5,
-        name: "자켓",
-        image: "/outer/jacket/jacket1.jpeg",
-        category: "outer",
-    },
+const products = [
+    { id: 1, name: "기본 티셔츠", image: "/top/short-tshirt/shirt.jpeg", category: "top" },
+    { id: 2, name: "청바지", image: "/bottom/longpant/pants.jpeg", category: "bottom" },
+    { id: 3, name: "후드티", image: "/top/hoodie/hoodie1.jpeg", category: "top" },
+    { id: 4, name: "슬랙스", image: "/bottom/slacks/slacks1.jpeg", category: "bottom" },
+    { id: 5, name: "자켓", image: "/outer/jacket/jacket1.jpeg", category: "outer" },
 ];
+
+const categories = [
+    { name: "TOP", sub: "상의", path: "top", image: "/top/sweatshirt/ss3.webp" },
+    { name: "BOTTOM", sub: "하의", path: "bottom", image: "/bottom/longpant/pants1.webp" },
+    { name: "OUTER", sub: "아우터", path: "outer", image: "/outer/downjacket/d2.png" },
+];
+
+const readStorage = (key) => {
+    try {
+        const data = JSON.parse(localStorage.getItem(key) || "[]");
+        return Array.isArray(data) ? data : [];
+    } catch {
+        return [];
+    }
+};
 
 const MainPage = () => {
     const [wishlist, setWishlist] = useState([]);
     const [displayProducts, setDisplayProducts] = useState([]);
 
     useEffect(() => {
-        const savedWishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
-        setWishlist(savedWishlist);
+        setWishlist(readStorage("wishlist"));
 
-        const clickedProducts =
-            JSON.parse(localStorage.getItem("clickedProducts")) || [];
-
-        if (clickedProducts.length > 0) {
-            setDisplayProducts(clickedProducts.slice(0, 3));
-        } else {
-            const shuffled = [...productData].sort(() => 0.5 - Math.random());
-            setDisplayProducts(shuffled.slice(0, 3));
-        }
+        const clicked = readStorage("clickedProducts");
+        setDisplayProducts(
+            clicked.length ? clicked.slice(0, 3) : products.slice(0, 3)
+        );
     }, []);
 
     const toggleWishlist = (product) => {
-        const isExist = wishlist.some((item) => item.id === product.id);
+        const updated = wishlist.some(p => p.id === product.id)
+            ? wishlist.filter(p => p.id !== product.id)
+            : [...wishlist, product];
 
-        let updatedWishlist;
-        if (isExist) {
-            updatedWishlist = wishlist.filter((item) => item.id !== product.id);
-        } else {
-            updatedWishlist = [...wishlist, product];
-        }
-
-        setWishlist(updatedWishlist);
-        localStorage.setItem("wishlist", JSON.stringify(updatedWishlist));
+        setWishlist(updated);
+        localStorage.setItem("wishlist", JSON.stringify(updated));
     };
 
-    const isWished = (id) => wishlist.some((item) => item.id === id);
-
     const handleProductClick = (product) => {
-        const clickedProducts =
-            JSON.parse(localStorage.getItem("clickedProducts")) || [];
-
-        const updatedClickedProducts = [
+        const clicked = readStorage("clickedProducts");
+        const updated = [
             product,
-            ...clickedProducts.filter((item) => item.id !== product.id),
-        ];
+            ...clicked.filter(p => p.id !== product.id)
+        ].slice(0, 20);
 
-        localStorage.setItem(
-            "clickedProducts",
-            JSON.stringify(updatedClickedProducts)
-        );
-
-        setDisplayProducts(updatedClickedProducts.slice(0, 3));
+        localStorage.setItem("clickedProducts", JSON.stringify(updated));
+        localStorage.setItem("recentlyViewed", JSON.stringify(updated));
+        setDisplayProducts(updated.slice(0, 3));
     };
 
     const startVirtualFitting = async () => {
-    try {
-        const response = await fetch("http://localhost:8080/api/fitting/start", {
-            method: "POST",
-        });
+        try {
+            const response = await fetch(
+                "http://localhost:8080/api/fitting/start",
+                { method: "POST" }
+            );
 
-        const result = await response.text();
-        alert(result);
-    } catch (error) {
-        console.error(error);
-        alert("가상 피팅 실행 실패");
-    }
-};
+            if (!response.ok) throw new Error("서버 오류");
+            alert(await response.text());
+        } catch (error) {
+            console.error(error);
+            alert("가상 피팅 실행 실패");
+        }
+    };
 
     return (
         <div className="main-container">
-            {/* Navbar */}
-            <header className="navbar">
-                <img src="/로고1.png" alt="로고1" />
-                <div className="menu">
-                    <Link to="/category">카테고리</Link>
-                    <Link to="/recommend">추천</Link>
-                    <Link to="/wishlist">찜</Link>
-                    <Link to="/cart">장바구니</Link>
-                    <Link to="/mypage">마이페이지</Link>
-                </div>
-            </header>
+            <Header />
 
             {/* 메인 배너 */}
-            <section className="banner">
-                <h1>가상으로 미리 입어보세요</h1>
-                <p>웹캠으로 나에게 딱 맞는 사이즈 찾기</p>
-                <button className="fit-btn" onClick={startVirtualFitting}>
-    가상 피팅 시작
-</button>
+            <section className="main-hero">
+                <div className="hero-content">
+                    <span className="hero-tag">WEAR IT · VIRTUAL FITTING</span>
+                    <h1>
+                        FIND YOUR STYLE,
+                        <br />
+                        WEAR YOUR WAY.
+                    </h1>
+                    <p>
+                        나에게 어울리는 스타일을 발견하고
+                        <br />
+                        가상으로 먼저 입어보세요.
+                    </p>
+                    <button onClick={startVirtualFitting}>
+                        가상 피팅 시작 →
+                    </button>
+                </div>
             </section>
 
             {/* 카테고리 */}
-            <section className="category">
-                <h2>카테고리</h2>
-                <div className="category-list">
-                    <Link to="/category/list/top" className="category-item">
-                        상의
-                    </Link>
-                    <Link to="/category/list/bottom" className="category-item">
-                        하의
-                    </Link>
-                    <Link to="/category/list/outer" className="category-item">
-                        아우터
-                    </Link>
+            <section className="main-section">
+                <div className="section-title">
+                    <span>SHOP BY CATEGORY</span>
+                    <h2>어떤 스타일을 찾으세요?</h2>
                 </div>
-            </section>
 
-            {/* 상품 리스트 */}
-            <section className="products">
-                <h2>인기 상품</h2>
-                <div className="product-list">
-                    {displayProducts.map((product) => (
-                        <div
-                            className="product-card"
-                            key={product.id}
-                            onClick={() => handleProductClick(product)}
+                <div className="main-category-grid">
+                    {categories.map(category => (
+                        <Link
+                            to={`/category/list/${category.path}`}
+                            className="main-category-card"
+                            key={category.path}
                         >
-                            <button
-                                className="wishlist-btn"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleWishlist(product);
-                                }}
-                            >
-                                {isWished(product.id) ? "❤️" : "🤍"}
-                            </button>
-
-                            <img src={product.image} alt={product.name} />
-                            <p>{product.name}</p>
-                        </div>
+                            <img src={category.image} alt={category.sub} />
+                            <div className="category-overlay">
+                                <h3>{category.name}</h3>
+                                <p>{category.sub} 보러가기 →</p>
+                            </div>
+                        </Link>
                     ))}
                 </div>
             </section>
 
-            {/* Footer */}
-            <footer className="footer">
-                <p>© 2026 Virtual Fit Project</p>
+            {/* 가상 피팅 소개 */}
+            <section className="main-fitting-banner">
+                <span>SMART FASHION EXPERIENCE</span>
+                <h2>입어보지 않아도, 미리 경험하는 스타일</h2>
+                <p>WEAR IT의 가상 피팅 기술로 새로운 쇼핑을 경험해 보세요.</p>
+            </section>
+
+            <footer className="main-footer">
+                © 2026 WEAR IT · Virtual Fitting Project
             </footer>
         </div>
     );

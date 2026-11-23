@@ -1,85 +1,74 @@
+
+/* ===== 전체 페이지 ===== */
 .mypage-container {
     min-height: 100vh;
-    background-color: #fffaf5;
-    font-family: Arial, sans-serif;
     width: 100%;
+    background: #fffaf5;
+    font-family: Arial, sans-serif;
 }
 
-.navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 28px 50px;
-    background-color: #f5e9dd;
-}
-
-.logo {
-    font-size: 28px;
-    font-weight: bold;
-    color: #3e2a1e;
-}
-
-.logo-link {
-    text-decoration: none;
-    color: #3e2a1e;
-}
-
-.menu {
-    display: flex;
-    gap: 35px;
-}
-
-.menu a {
-    text-decoration: none;
-    color: #5a3e2b;
-    font-size: 16px;
-}
-
-.menu a:visited {
-    color: #5a3e2b;
-}
-
-.menu a:hover {
-    color: #5a3e2b;
-}
-
+/* ===== 상단 소개 ===== */
 .mypage-hero {
-    padding: 50px 50px 50px;
-    background-color: #fdf1e7;
+    padding: 50px;
+    background: #fdf1e7;
 }
-
 
 .mypage-hero p {
+    margin: 0;
     font-size: 20px;
     color: #555;
 }
 
+/* ===== 마이페이지 레이아웃 ===== */
 .mypage-content {
-    width: 100%;
     display: flex;
+    align-items: stretch;
     gap: 30px;
-    padding: 30px 30px;
+    padding: 30px;
     box-sizing: border-box;
 }
 
-.profile-card {
-    width: 320px;
-    min-width: 320px;
-    background-color: white;
+/* 공통 카드 디자인 */
+.profile-card,
+.info-card {
+    background: white;
     border-radius: 20px;
-    padding: 30px;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    box-sizing: border-box;
+}
+
+/* ===== 회원 / 비회원 카드 ===== */
+.profile-card {
+    flex: 0 0 400px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.membership-badge {
+    display: inline-block;
+    align-self: flex-start;
+    padding: 7px 12px;
+    border-radius: 20px;
+    background: #fceee5;
+    color: #714b36;
+    font-size: 13px;
+    font-weight: 700;
 }
 
 .profile-card h2 {
-    margin-bottom: 20px;
+    margin: 24px 0 18px;
     color: #5a3e2b;
+    font-size: 22px;
+    line-height: 1.4;
 }
 
-.profile-card p {
-    margin: 12px 0;
-    font-size: 16px;
+.profile-card .login-desc {
+    margin: 0;
     color: #333;
+    font-size: 14px;
+    line-height: 1.7;
 }
 
 .login-desc span {
@@ -87,173 +76,258 @@
     font-weight: bold;
 }
 
+/* ===== 로그인 / 회원가입 / 로그아웃 ===== */
 .profile-buttons {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    margin-top: 25px;
+    margin-top: 35px;
 }
 
 .signup-btn-link,
 .login-btn-link,
 .logout-btn {
+    display: block;
     width: 100%;
-    padding: 12px;
+    padding: 30px;
     border-radius: 12px;
-    font-size: 15px;
+    box-sizing: border-box;
+    font-size: 14px;
     text-align: center;
     text-decoration: none;
-    box-sizing: border-box;
     cursor: pointer;
+    transition: background 0.2s;
 }
 
 .signup-btn-link {
-    background-color: white;
     border: 1px solid #d0d0d0;
+    background: white;
     color: #333;
 }
 
-.login-btn-link {
-    background-color: #d89c7c;
-    color: white;
+.login-btn-link,
+.logout-btn,
+.mypage-fitting-btn {
+    background: #d89c7c;
     border: none;
-}
-
-
-.signup-btn-link:hover,
-.login-btn-link:hover {
-    background-color: #5e3f2f !important;
-}
-
-.logout-btn {
-    background-color: #d89c7c;
     color: white;
-    border: none;
 }
 
+.signup-btn-link:hover {
+    background: #f9eee8;
+}
+
+.login-btn-link:hover,
+.logout-btn:hover,
+.mypage-fitting-btn:hover,
+.card-link:hover,
+.card-btn:hover {
+    background: #bd8062;
+}
+
+/* ===== 나만의 가상 피팅 ===== */
+.mypage-fitting {
+    margin-top: 28px;
+    padding: 18px;
+    background: #f8ece4;
+    border-radius: 14px;
+}
+
+.mypage-fitting-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.mypage-fitting-title span {
+    font-size: 22px;
+}
+
+.mypage-fitting-title h3 {
+    margin: 0;
+    color: #5a3e2b;
+    font-size: 16px;
+}
+
+.mypage-fitting p {
+    margin: 12px 0 18px;
+    color: #80695d;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.mypage-fitting-btn {
+    width: 100%;
+    padding: 13px;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+/* ===== 쇼핑 정보 카드 ===== */
 .info-grid {
     flex: 1;
+    min-width: 0;
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(200px, 1fr));
     gap: 20px;
 }
 
 .info-card {
-    background-color: white;
-    border-radius: 20px;
     padding: 28px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
 .info-card h3 {
-    margin-bottom: 14px;
+    margin: 0 0 14px;
     color: #5a3e2b;
+    font-size: 30px;
 }
 
 .info-card p {
+    margin: 0 0 18px;
     color: #666;
-    margin-bottom: 18px;
     line-height: 1.5;
-}
-
-.card-link,
-.card-btn {
-    display: inline-block;
-    padding: 10px 18px;
-    border-radius: 10px;
-    background-color: #d89c7c;
-    color: white;
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
     font-size: 14px;
 }
 
-.help-section {
-    width: 100%;
-    padding: 0 50px 80px;
-    box-sizing: border-box;
-}
-
-.help-section h2 {
-    margin-bottom: 20px;
-    color: #5a3e2b;
-}
-
-.help-list {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-}
-
-.help-item {
-    background-color: white;
-    padding: 22px;
-    text-align: center;
-    border-radius: 16px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+/* 이동 / 수정 버튼 */
+.card-link,
+.card-btn {
+    display: inline-block;
+    padding: 12px 18px;
+    border: none;
+    border-radius: 10px;
+    background: #d89c7c;
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
     cursor: pointer;
+    transition: background 0.2s;
 }
 
-@media (max-width: 900px) {
-    .mypage-content {
-        flex-direction: column;
-    }
-
-    .profile-card {
-        width: 100%;
-        min-width: auto;
-    }
-
-    .info-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .help-list {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
+/* ===== 사이즈 수정 ===== */
 .size-inputs {
     display: flex;
+    flex-wrap: wrap;
     gap: 10px;
     margin-bottom: 12px;
 }
 
 .size-inputs input {
-    flex: 1;
+    flex: 1 1 100px;
+    min-width: 0;
     padding: 8px;
-    border-radius: 8px;
     border: 1px solid #ccc;
-}
-
-.cart-preview {
-    margin-top: 10px;
-}
-
-.cart-item {
-    padding: 5px 0;
-    border-bottom: 1px solid #eee;
-}
-
-.category-item {
-    text-decoration: none;
-    color: black;
-    padding: 12px 24px;
-    border: 1px solid #ddd;
     border-radius: 8px;
-    background-color: white;
-    display: inline-block;
+    box-sizing: border-box;
 }
 
-.category-item:hover {
-    background-color: #f5f5f5;
+/* ===== 고객 지원 ===== */
+.help-section {
+    padding: 20px 30px 80px;
 }
 
-.footer {
+.help-section h2 {
+    margin: 0 0 20px;
+    color: #5a3e2b;
+}
+
+.help-list {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.help-item {
+    padding: 22px;
+    background: white;
+    border-radius: 16px;
     text-align: center;
-    padding: 20px;
-    background-color: #fdf1e7;
-    color: #7a5c49;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+}
+
+/* ===== 푸터 ===== */
+.mypage-container .footer {
     margin-top: 20px;
+    padding: 20px;
+    background: #fdf1e7;
+    color: #7a5c49;
+    text-align: center;
+}
+
+/* ===== 헤더 메뉴 정렬 ===== */
+.mypage-container .navbar .menu {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    gap: 16px;
+    min-width: 0;
+    overflow-x: auto;
+}
+
+.mypage-container .navbar .menu > a,
+.mypage-container .navbar .menu > strong {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.mypage-container .navbar .menu > .logout-btn {
+    flex: 0 0 auto;
+    width: auto;
+    padding: 6px 12px;
+    margin: 0;
+    border-radius: 8px;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+/* ===== 태블릿 ===== */
+@media (max-width: 900px) {
+    .mypage-content {
+        flex-direction: column;
+        padding: 20px;
+        gap: 20px;
+    }
+
+    .profile-card {
+        flex: none;
+        width: 100%;
+    }
+
+    .mypage-fitting {
+        margin-top: 24px;
+    }
+
+    .info-grid {
+        width: 100%;
+        grid-template-rows: auto;
+    }
+
+    .help-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* ===== 모바일 ===== */
+@media (max-width: 600px) {
+    .mypage-hero {
+        padding: 30px 20px;
+    }
+
+    .mypage-hero p {
+        font-size: 16px;
+    }
+
+    .info-grid,
+    .help-list {
+        grid-template-columns: 1fr;
+    }
+
+    .help-section {
+        padding: 20px 20px 50px;
+    }
 }

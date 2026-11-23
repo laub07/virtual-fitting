@@ -1,131 +1,219 @@
+
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import Header from "./Header";
 import "./MyPage.css";
 
+const readSession = (key) => {
+    const value = sessionStorage.getItem(key)?.trim();
+    return value && !["null", "undefined"].includes(value) ? value : null;
+};
+
+const infoCards = [
+    {
+        title: "찜한 상품",
+        description: "내가 저장한 상품을 확인할 수 있어요.",
+        path: "/wishlist",
+        button: "바로가기"
+    },
+    {
+        title: "추천 상품",
+        description: "날씨 별 추천 내역을 볼 수 있어요.",
+        path: "/recommend",
+        button: "보러가기"
+    },
+    {
+        title: "장바구니",
+        description: "담아둔 상품을 확인할 수 있어요.",
+        path: "/cart",
+        button: "보러가기"
+    }
+];
+
 function MyPage() {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(
+        () => Boolean(readSession("Authorization") || readSession("userId"))
+    );
+
+    const username = isLoggedIn ? readSession("Username") : null;
     const [isEditing, setIsEditing] = useState(false);
     const [topSize, setTopSize] = useState("");
     const [bottomSize, setBottomSize] = useState("");
 
     useEffect(() => {
-        const token = sessionStorage.getItem("Authorization");
-        setIsLoggedIn(!!token);
+        if (!isLoggedIn) return;
 
-        const savedTop = localStorage.getItem("topSize");
-        const savedBottom = localStorage.getItem("bottomSize");
+        setTopSize(localStorage.getItem("topSize") || "");
+        setBottomSize(localStorage.getItem("bottomSize") || "");
+    }, [isLoggedIn]);
 
-        if (savedTop) setTopSize(savedTop);
-        if (savedBottom) setBottomSize(savedBottom);
-    }, []);
-
+    // 로그아웃
     const handleLogout = () => {
-        sessionStorage.removeItem("Authorization");
-        sessionStorage.removeItem("Role");
+        ["Authorization", "Role", "userId", "Username"].forEach(
+            (key) => sessionStorage.removeItem(key)
+        );
+
         setIsLoggedIn(false);
         window.location.href = "/";
     };
+
+    // 사이즈 저장
     const handleSaveSize = () => {
         localStorage.setItem("topSize", topSize);
         localStorage.setItem("bottomSize", bottomSize);
         setIsEditing(false);
     };
 
+    // 가상 피팅 실행
+    const startVirtualFitting = async () => {
+        try {
+            const response = await fetch(
+                "http://localhost:8080/api/fitting/start",
+                { method: "POST" }
+            );
+
+            if (!response.ok) throw new Error("가상 피팅 실행 오류");
+
+            alert(await response.text());
+        } catch (error) {
+            console.error(error);
+            alert("가상 피팅 실행 실패");
+        }
+    };
+
     return (
         <div className="mypage-container">
-            <header className="navbar">
-                <h2 className="logo">
-                    <Link to="/" className="logo-link">
-                        <img src="/로고1.png" alt="Fit on X 로고" className="logo-img" />
-                    </Link>
-                </h2>
-                <div className="menu">
-                    <Link to="/category">카테고리</Link>
-                    <Link to="/recommend">추천</Link>
-                    <Link to="/wishlist">찜</Link>
-                    <Link to="/cart">장바구니</Link>
-                    <Link to="/mypage">마이페이지</Link>
-                </div>
-            </header>
+            <Header />
 
             <section className="mypage-hero">
                 <p>내 정보와 쇼핑 활동을 한눈에 확인해보세요</p>
             </section>
 
             <section className="mypage-content">
+
+                {/* 회원 정보 */}
                 <div className="profile-card">
-                    {!isLoggedIn ? (
+                    <span className="membership-badge">
+                        {isLoggedIn ? "회원" : "비회원"}
+                    </span>
+
+                    {isLoggedIn ? (
                         <>
-                            <h2>회원이라면 누구나 무료배송</h2>
+                            <h2>
+                                {username
+                                    ? `${username}님, 반가워요!`
+                                    : "반가워요!"}
+                            </h2>
+
                             <p className="login-desc">
-                                지금 가입하고 <span>최대 30% 할인 쿠폰</span> 혜택을 받아보세요
+                                내 사이즈와 쇼핑 활동을 확인해보세요.
                             </p>
 
                             <div className="profile-buttons">
-                                <Link to="/signup" className="signup-btn-link">회원가입</Link>
-                                <Link to="/login" className="login-btn-link">로그인</Link>
+                                <button
+                                    type="button"
+                                    className="logout-btn"
+                                    onClick={handleLogout}>
+                                    로그아웃
+                                </button>
+                            </div>
+
+                            {/* 나만의 가상 피팅 */}
+                            <div className="mypage-fitting">
+                                <div className="mypage-fitting-title">
+                                    <span><h3>👕</h3></span>
+                                    <h3>나만의 가상 피팅</h3>
+                                </div>
+
+                                <p>
+                                    마음에 드는 옷을 가상으로
+                                    입어보세요.
+                                </p>
+
+                                <button
+                                    type="button"
+                                    className="mypage-fitting-btn"
+                                    onClick={startVirtualFitting}
+                                >
+                                    피팅 시작하기 →
+                                </button>
                             </div>
                         </>
                     ) : (
                         <>
+                            <h2>WearIt! Wear IT!</h2>
+
+                            <p className="login-desc">
+                                지금 가입하고{" "}
+                                <span>가상피팅</span>{" "}
+                                체험을 해보세요 !
+                            </p>
+
                             <div className="profile-buttons">
-                                <button className="logout-btn" onClick={handleLogout}>
-                                    로그아웃
-                                </button>
+                                <Link
+                                    to="/signup"
+                                    className="signup-btn-link"
+                                >
+                                    회원가입
+                                </Link>
+
+                                <Link
+                                    to="/login"
+                                    className="login-btn-link"
+                                >
+                                    로그인
+                                </Link>
                             </div>
                         </>
                     )}
                 </div>
 
+                {/* 쇼핑 정보 */}
                 <div className="info-grid">
-                    <div className="info-card">
-                        <h3>찜한 상품</h3>
-                        <p>내가 저장한 상품을 확인할 수 있어요.</p>
-                        <Link to="/wishlist" className="card-link">바로가기</Link>
-                    </div>
+                    {infoCards.map((card) => (
+                        <div className="info-card" key={card.path}>
+                            <h3>{card.title}</h3>
+                            <p>{card.description}</p>
+                            <Link to={card.path} className="card-link">
+                                {card.button}
+                            </Link>
+                        </div>
+                    ))}
 
-                    <div className="info-card">
-                        <h3>최근 본 상품</h3>
-                        <p>최근에 둘러본 상품 내역을 볼 수 있어요.</p>
-                        <button className="card-btn">확인하기</button>
-                    </div>
-
-                    <div className="info-card">
-                        <h3>장바구니</h3>
-                        <p>담아둔 상품을 확인할 수 있어요.</p>
-                        <Link to="/cart" className="card-link">보러가기</Link>
-                    </div>
-
+                    {/* 내 사이즈 정보 */}
                     <div className="info-card">
                         <h3>내 사이즈 정보</h3>
 
-                        {!isEditing ? (
+                        {!isLoggedIn ? (
                             <>
                                 <p>
-                                    상의 {topSize || "미설정"} / 하의 {bottomSize || "미설정"}
+                                    로그인 후 내 사이즈를 확인하고
+                                    수정할 수 있어요.
                                 </p>
-                                <button
-                                    type="button"
-                                    className="card-btn"
-                                    onClick={() => setIsEditing(true)}
-                                >
-                                    수정하기
-                                </button>
+                                <Link to="/login" className="card-link">
+                                    로그인하기
+                                </Link>
                             </>
-                        ) : (
+                        ) : isEditing ? (
                             <>
                                 <div className="size-inputs">
                                     <input
                                         type="text"
+                                        aria-label="상의 사이즈"
                                         placeholder="상의 (예: M)"
                                         value={topSize}
-                                        onChange={(e) => setTopSize(e.target.value)}
+                                        onChange={(e) =>
+                                            setTopSize(e.target.value)
+                                        }
                                     />
                                     <input
                                         type="text"
+                                        aria-label="하의 사이즈"
                                         placeholder="하의 (예: 25)"
                                         value={bottomSize}
-                                        onChange={(e) => setBottomSize(e.target.value)}
+                                        onChange={(e) =>
+                                            setBottomSize(e.target.value)
+                                        }
                                     />
                                 </div>
 
@@ -137,32 +225,48 @@ function MyPage() {
                                     저장
                                 </button>
                             </>
-                        )}
-                    </div>
+                        ) : (
+                            <>
+                                <p>
+                                    상의 {topSize || "미설정"} /
+                                    하의 {bottomSize || "미설정"}
+                                </p>
 
-                    <div className="info-card">
-                        <h3>가상 피팅 기록</h3>
-                        <p>최근 피팅한 상품과 추천 사이즈를 볼 수 있어요.</p>
-                        <button className="card-btn">보러가기</button>
+                                <button
+                                    type="button"
+                                    className="card-btn"
+                                    onClick={() => setIsEditing(true)}
+                                >
+                                    수정하기
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
             </section>
 
+            {/* 고객 지원 */}
             <section className="help-section">
                 <h2>고객 지원</h2>
                 <div className="help-list">
-                    <div className="help-item">고객센터</div>
-                    <div className="help-item">공지사항</div>
-                    <div className="help-item">개인정보처리방침</div>
-                    <div className="help-item">서비스 이용약관</div>
+                    {[
+                        "고객센터",
+                        "공지사항",
+                        "개인정보처리방침",
+                        "서비스 이용약관"
+                    ].map((item) => (
+                        <div className="help-item" key={item}>
+                            {item}
+                        </div>
+                    ))}
                 </div>
             </section>
+
             <footer className="footer">
                 <p>© 2026 Virtual Fit Project</p>
             </footer>
         </div>
-
     );
-};
+}
 
 export default MyPage;
